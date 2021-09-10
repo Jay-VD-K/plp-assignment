@@ -1,4 +1,4 @@
-package lexer_test;
+package edu.ufl.cise.plpfa21.assignment1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

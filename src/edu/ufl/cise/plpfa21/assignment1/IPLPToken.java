@@ -1,5 +1,4 @@
-package lexer_test;
-
+package edu.ufl.cise.plpfa21.assignment1;
 
 
 public interface IPLPToken extends PLPTokenKinds {
