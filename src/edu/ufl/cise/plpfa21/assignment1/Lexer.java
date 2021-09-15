@@ -33,26 +33,35 @@ public class Lexer implements IPLPLexer {
 		}
 		if (input.charAt(i) == '/' && input.charAt(i + 1) == '*') {
 			i += 2;
-			while (input.charAt(i) != '*' && input.charAt(i + 1) != '/') {
+			try {while (input.charAt(i) != '*' && input.charAt(i + 1) != '/') {
 				i++;
+			}
+			}
+			catch(Exception e){
+				throw new LexicalException("invalid comment", 1, 1);
 			}
 			i += 2;
 		}
 		if (input.charAt(i) == ' ') {
 			i = checkSpace(input, i);
 			pos += i;
-			startPos += i + 1;
+			startPos += i;
 		}
 
 		for (; i < input.length() - 1; i++) {
 
 			switch (input.charAt(i)) {
-			case '\n':
+			case '\n': {
+				input = input.substring(i + 1);
 				pos = 0;
+				flag = 1;
+			}
+				break;
 			case ' ':
 			case '\r':
 			case '\t': {
 				input = input.substring(i + 1);
+				pos++;
 				flag = 1;
 			}
 				break;
@@ -62,12 +71,14 @@ public class Lexer implements IPLPLexer {
 
 				if (input.charAt(i + 1) == '&') {
 					s += input.charAt(i + 1);
-
+					pos++;
 					input = input.substring(i + 2);
 					return new Tokens(s, parentInput, startPos);
 				}
-				input = input.substring(i + 1);
-				return new Tokens(s, parentInput, startPos);
+				else 
+					throw new LexicalException("invalid token", 1, 1);
+				//input = input.substring(i + 1);
+				//return new Tokens(s, parentInput, startPos);
 			}
 			case '|': {
 				s += input.charAt(i);
@@ -75,12 +86,14 @@ public class Lexer implements IPLPLexer {
 
 				if (input.charAt(i + 1) == '|') {
 					s += input.charAt(i + 1);
-
+					pos++;
 					input = input.substring(i + 2);
 					return new Tokens(s, parentInput, startPos);
 				}
-				input = input.substring(i + 1);
-				return new Tokens(s, parentInput, startPos);
+				else
+					throw new LexicalException("invalid token", 1, 1);
+				//input = input.substring(i + 1);
+				//return new Tokens(s, parentInput, startPos);
 			}
 			case '=': {
 				s += input.charAt(i);
@@ -125,6 +138,7 @@ public class Lexer implements IPLPLexer {
 				for (; j < input.length() - 2; j++) {
 					if (input.charAt(j) != '"') {
 						s += input.charAt(j);
+						pos++;
 					} else if (input.charAt(j) == '\\')
 						switch (input.charAt(j + 1)) {
 						case '\b', '\t', '\n', '\r', '\f', '\'', '\\':
@@ -132,13 +146,15 @@ public class Lexer implements IPLPLexer {
 						case '\"': {
 							if (input.charAt(j + 2) != '"')
 								throw new LexicalException("incorrect escape sequence", 1, 1);
+							else
+								continue;
 						}
 						default:
 							throw new LexicalException("incorrect escape sequence", 1, 1);
 						}
 				}
 				s += input.charAt(j);
-
+				pos++;
 				i = j;
 				input = input.substring(i + 1);
 				return new Tokens(s, parentInput, startPos);
@@ -147,19 +163,21 @@ public class Lexer implements IPLPLexer {
 				int j = i + 1;
 				s += input.charAt(i);
 				pos++;
-				for (; j < input.length() - 2; j++) {
+				for (; j < input.length() - 1; j++) {
 					if (input.charAt(j) != '\'') {
 						s += input.charAt(j);
-					} else if (input.charAt(j) == '\\')
-						switch (input.charAt(j + 1)) {
+						pos++;
+					} else {
+						switch (input.charAt(j)) {
 						case '\b', '\t', '\n', '\r', '\f', '\"', '\'', '\\':
 							continue;
 						default:
 							throw new LexicalException("incorrect escape sequence", 1, 1);
 						}
+					}
 				}
 				s += input.charAt(j);
-
+				pos++;
 				i = j;
 				input = input.substring(i + 1);
 				return new Tokens(s, parentInput, startPos);
@@ -182,7 +200,6 @@ public class Lexer implements IPLPLexer {
 						count = 0;
 						int lineNumber = new Tokens(s, parentInput, startPos).getLine();
 						int posNumber = new Tokens(s, parentInput, startPos).getCharPositionInLine();
-						System.out.println("error" + lineNumber + posNumber);
 						throw new LexicalException("integer outofbound", lineNumber, posNumber);
 					}
 					continue;
@@ -223,7 +240,7 @@ public class Lexer implements IPLPLexer {
 						break;
 					}
 				} else {
-					throw new LexicalException("hello", 1, 1);
+					throw new LexicalException("invalid token", 1, 1);
 				}
 			}
 
