@@ -1,4 +1,5 @@
 package edu.ufl.cise.plpfa21.assignment1;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -199,7 +200,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			IPLPToken token = lexer.nextToken();
 		});
 	}
-	
+
 	@Test
 	public void test8() throws LexicalException {
 		String input = """
@@ -230,7 +231,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			IPLPToken token = lexer.nextToken();
 		});
 	}
-	
+
 	@Test
 	public void test6() throws LexicalException {
 		String input = """
@@ -263,6 +264,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(kind, Kind.EOF);
 		}
 	}
+
 	@Test
 	public void test7() throws LexicalException {
 		String input = """
@@ -310,7 +312,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(kind, Kind.EOF);
 		}
 	}
-	
+
 	@Test
 	public void test9() throws LexicalException {
 		String input = """
@@ -330,7 +332,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(stringValue, "abc\n b");
 		}
 	}
-	
+
 	@Test
 	public void test10() throws LexicalException {
 		String input = """
@@ -349,6 +351,6 @@ class ExampleLexerTests implements PLPTokenKinds {
 			System.out.println(stringValue);
 			assertEquals(stringValue, "abc\n b");
 		}
-		}
+	}
 
 }
