@@ -43,8 +43,13 @@ public class Lexer implements IPLPLexer {
 		int startPos = pos;
 		String s = "";
 		int flag = 0, i = 0, count = 0;
-		if (input.charAt(0) == '\n' || (input.charAt(0) == '\r' && input.charAt(1) == '\n')) {
+		if (input.charAt(0) == '\n') {
 			s += input.charAt(0);
+			pos = 0;
+			return new Tokens(s, parentInput, startPos);
+		} else if ((input.charAt(0) == '\r' && input.charAt(1) == '\n')) {
+			s += input.charAt(0);
+			s += input.charAt(1);
 			pos = 0;
 			return new Tokens(s, parentInput, startPos);
 		} else if (input.charAt(0) == ' ') {
