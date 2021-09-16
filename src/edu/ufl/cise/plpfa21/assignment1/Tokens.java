@@ -2,7 +2,7 @@ package edu.ufl.cise.plpfa21.assignment1;
 
 public class Tokens implements IPLPToken {
 
-	String input, parentInput, tokenLine;
+	String input, parentInput;
 	int pos;
 	static int length = 0;
 
@@ -24,12 +24,6 @@ public class Tokens implements IPLPToken {
 		if (start.matches("[a-zA-Z_$]") && remain.matches("[a-zA-Z_$0-9]+")) {
 
 			switch (s) {
-			case "var":
-				return Kind.KW_VAR;
-
-			case "val":
-				return Kind.KW_VAL;
-
 			case "fun":
 				return Kind.KW_FUN;
 
@@ -63,6 +57,15 @@ public class Tokens implements IPLPToken {
 			case "return":
 				return Kind.KW_RETURN;
 
+			case "list":
+				return Kind.KW_LIST;
+
+			case "var":
+				return Kind.KW_VAR;
+
+			case "val":
+				return Kind.KW_VAL;
+
 			case "nil":
 				return Kind.KW_NIL;
 
@@ -81,9 +84,6 @@ public class Tokens implements IPLPToken {
 			case "boolean":
 				return Kind.KW_BOOLEAN;
 
-			case "list":
-				return Kind.KW_LIST;
-
 			case "float":
 				return Kind.KW_FLOAT;
 
@@ -96,19 +96,21 @@ public class Tokens implements IPLPToken {
 
 		} else if (start.matches("[a-zA-Z_$]"))
 			return Kind.IDENTIFIER;
+
 		else {
 			switch (s) {
-			case "=":
-				return Kind.ASSIGN;
+
+			case ":":
+				return Kind.COLON;
 
 			case ",":
 				return Kind.COMMA;
 
+			case "=":
+				return Kind.ASSIGN;
+
 			case ";":
 				return Kind.SEMI;
-
-			case ":":
-				return Kind.COLON;
 
 			case "(":
 				return Kind.LPAREN;
@@ -140,9 +142,6 @@ public class Tokens implements IPLPToken {
 			case "!=":
 				return Kind.NOT_EQUALS;
 
-			case "!":
-				return Kind.BANG;
-
 			case "+":
 				return Kind.PLUS;
 
@@ -154,6 +153,9 @@ public class Tokens implements IPLPToken {
 
 			case "/":
 				return Kind.DIV;
+
+			case "!":
+				return Kind.BANG;
 
 			case "\n":
 				return Kind.EOF;
@@ -168,11 +170,7 @@ public class Tokens implements IPLPToken {
 
 	@Override
 	public String getText() {
-		String s = "";
-		for (int i = 0; i < input.length(); i++)
-			if (input.charAt(i) != ' ')
-				s = s + input.charAt(i);
-		return s;
+		return input;
 	}
 
 	@Override
