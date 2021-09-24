@@ -1,4 +1,4 @@
-package edu.ufl.cise.plpfa21.assignment1;
+package edu.ufl.cise.plpfa21.assignment2;
 
 public class Tokens implements IPLPToken {
 
@@ -9,10 +9,14 @@ public class Tokens implements IPLPToken {
 	public Tokens(String input, String parentInput, int pos) {
 		this.input = input;
 		this.parentInput = parentInput;
+		this.parent = parentInput;
 		this.pos = pos;
 	}
 
+	String parent = parentInput;
 	String s = parentInput;
+	
+	
 
 	@Override
 	public Kind getKind() {
@@ -24,67 +28,67 @@ public class Tokens implements IPLPToken {
 		if (start.matches("[a-zA-Z_$]") && remain.matches("[a-zA-Z_$0-9]+")) {
 
 			switch (s) {
-			case "fun":
+			case "FUN":
 				return Kind.KW_FUN;
 
-			case "do":
+			case "DO":
 				return Kind.KW_DO;
 
-			case "end":
+			case "END":
 				return Kind.KW_END;
 
-			case "let":
+			case "LET":
 				return Kind.KW_LET;
 
-			case "switch":
+			case "SWITCH":
 				return Kind.KW_SWITCH;
 
-			case "case":
+			case "CASE":
 				return Kind.KW_CASE;
 
-			case "default":
+			case "DEFAULT":
 				return Kind.KW_DEFAULT;
 
-			case "if":
+			case "IF":
 				return Kind.KW_IF;
 
-			case "else":
+			case "ELSE":
 				return Kind.KW_ELSE;
 
-			case "while":
+			case "WHILE":
 				return Kind.KW_WHILE;
 
-			case "return":
+			case "RETURN":
 				return Kind.KW_RETURN;
 
-			case "list":
+			case "LIST":
 				return Kind.KW_LIST;
 
-			case "var":
+			case "VAR":
 				return Kind.KW_VAR;
 
-			case "val":
+			case "VAL":
 				return Kind.KW_VAL;
 
-			case "nil":
+			case "NIL":
 				return Kind.KW_NIL;
 
-			case "true":
+			case "TRUE":
 				return Kind.KW_TRUE;
 
-			case "false":
+			case "FALSE":
 				return Kind.KW_FALSE;
 
-			case "int":
+			case "INT":
 				return Kind.KW_INT;
 
-			case "String":
+			case "STRING":
 				return Kind.KW_STRING;
 
-			case "boolean":
+			case "BOOLEAN":
 				return Kind.KW_BOOLEAN;
 
-			case "float":
+			case "FLOAT":
 				return Kind.KW_FLOAT;
 
 			default:
@@ -179,7 +183,10 @@ public class Tokens implements IPLPToken {
 		int count = 1;
 		for (int i = 0; i < l; i++) {
 			if ((int) parentInput.charAt(i) == 10)
-				count++;
+			{	count++;
+				//pos=0;
+			}
+			
 		}
 		return count;
 
@@ -188,6 +195,10 @@ public class Tokens implements IPLPToken {
 	@Override
 	public int getCharPositionInLine() {
 		return pos;
+		/*int l = parent.indexOf(input);
+		parent = parent.substring(input.length(), parent.length());
+		pos+=l;
+		return pos;*/
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package edu.ufl.cise.plpfa21.assignment1;
+package edu.ufl.cise.plpfa21.assignment2;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -157,12 +157,24 @@ public class Lexer implements IPLPLexer {
 					Matcher match = stringPattern.matcher(input);
 					if (match.find()) {
 						s += match.group(1);
+						
 						input = input.substring(s.length(), input.length());
 						pos += s.length();
+						//i=pos-1;
+						if(input.charAt(0)=='\n' && input.length()!=1) {
+							input = input.substring(1);
+							pos = 0;
+							flag = 1;
+						}
+						for(int a=0; a<s.length()-1; a++) {
+							if(s.charAt(a)=='\n')
+								pos=0;
+						}
 						return new Tokens(s, parentInput, startPos);
 
 					} else {
-						throw new LexicalException("incomplete string literal", 1, 1);
+						//throw new LexicalException("incomplete string literal", 1, 1);
+						return new Tokens("\n", parentInput, startPos);
 					}
 				} else {
 					throw new LexicalException("Invalid token", 1, 1);

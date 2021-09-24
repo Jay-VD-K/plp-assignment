@@ -1,4 +1,4 @@
-package edu.ufl.cise.plpfa21.assignment1;
+package edu.ufl.cise.plpfa21.assignment2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -273,7 +273,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 	@Test
 	public void test7() throws LexicalException {
 		String input = """
-				int i = i+7;
+				INT i = i+7;
 				""";
 		IPLPLexer lexer = getLexer(input);
 		{
@@ -366,15 +366,20 @@ class ExampleLexerTests implements PLPTokenKinds {
 	@Test
 	public void test21() throws LexicalException {
 		String input = """
-				$
+				"
+				"
+				xxx
 				""";
 		IPLPLexer lexer = getLexer(input);
 		{
 			IPLPToken token = lexer.nextToken();
 			Kind kind = token.getKind();
+			assertEquals(kind, Kind.STRING_LITERAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
 			assertEquals(kind, Kind.IDENTIFIER);
-			String stringValue = token.getText();
-			assertEquals(stringValue, "$");
 		}
 		{
 			IPLPToken token = lexer.nextToken();
@@ -386,7 +391,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 	@Test
 	public void test22() throws LexicalException {
 		String input = """
-				" abc"abc" 
+				'abc"def'
 				""";
 		IPLPLexer lexer = getLexer(input);
 		{
@@ -394,12 +399,13 @@ class ExampleLexerTests implements PLPTokenKinds {
 			Kind kind = token.getKind();
 			assertEquals(kind, Kind.STRING_LITERAL);
 			String text = token.getText();
-			assertEquals(text, "\" abc\"");
+			assertEquals(text, "\'abc\"def\'");
 		}
-		assertThrows(LexicalException.class, () -> {
-			@SuppressWarnings("unused")
+		{
 			IPLPToken token = lexer.nextToken();
-		});
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.EOF);
+		}
 	}
 	
 
@@ -537,6 +543,41 @@ class ExampleLexerTests implements PLPTokenKinds {
 	}
 	
 	@Test
+	public void test24() throws LexicalException {
+		String input = """
+				"xx
+				yy
+				zz"abc
+				""";
+
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.STRING_LITERAL);
+			int line = token.getLine();
+			assertEquals(line, 1);
+			int charPositionInLine = token.getCharPositionInLine();
+			assertEquals(charPositionInLine, 0);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.IDENTIFIER);
+			int line = token.getLine();
+			assertEquals(line, 3);
+			int charPositionInLine = token.getCharPositionInLine();
+			assertEquals(charPositionInLine, 3);
+		
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.EOF);
+		}
+	}
+	
+	@Test
 	public void test14() throws LexicalException {
 		String input = """
 				/* half comment should throw error 
@@ -564,6 +605,46 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(charPositionInLine, 0);
 			String stringValue = token.getStringValue();
 			assertEquals(stringValue, "abc\n b");
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.EOF);
+		}
+	}
+	
+	@Test
+	public void test23() throws LexicalException {
+		String input = """
+				"This is a string""And another string"
+				"and another" "and another again"
+				""";
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.STRING_LITERAL);
+			int line = token.getLine();
+			assertEquals(line, 1);
+			int charPositionInLine = token.getCharPositionInLine();
+			assertEquals(charPositionInLine, 0);
+			String stringValue = token.getStringValue();
+			assertEquals(stringValue, "This is a string");
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.STRING_LITERAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.STRING_LITERAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.STRING_LITERAL);
 		}
 		{
 			IPLPToken token = lexer.nextToken();
@@ -610,7 +691,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 	@Test
 	public void test11() throws LexicalException {
 		String input = """
-				if abc else def i+=10;
+				IF abc ELSE def i+=10;
 				""";
 		IPLPLexer lexer = getLexer(input);
 		{
@@ -622,7 +703,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			int charPositionInLine = token.getCharPositionInLine();
 			assertEquals(charPositionInLine, 0);
 			String text = token.getText();
-			assertEquals(text, "if");
+			assertEquals(text, "IF");
 		}
 		{
 			IPLPToken token = lexer.nextToken();
@@ -644,7 +725,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			int charPositionInLine = token.getCharPositionInLine();
 			assertEquals(charPositionInLine, 7);
 			String text = token.getText();
-			assertEquals(text, "else");
+			assertEquals(text, "ELSE");
 		}
 		{
 			IPLPToken token = lexer.nextToken();

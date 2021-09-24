@@ -1,4 +1,4 @@
-package edu.ufl.cise.plpfa21.assignment1;
+package edu.ufl.cise.plpfa21.assignment2;
 
 
 public interface IPLPToken extends PLPTokenKinds {
