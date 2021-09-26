@@ -39,15 +39,14 @@ public class Parser implements IPLPParser {
 					token = lexerInput.nextToken();
 					kind = token.getKind();
 					while (kind == Kind.COMMA) // checks for multiple namedefs
-						{ callToken();
-						if(kind == Kind.IDENTIFIER)
-						{
+					{
+						callToken();
+						if (kind == Kind.IDENTIFIER) {
 							callToken();
 							nameDef();
-						}
-						else 
+						} else
 							throw new SyntaxException("fail 14 token", 1, 1);
-						}
+					}
 					// need to check for multiple nameDefs
 					// should check for rparen after nameDef ->
 					token = lexerInput.nextToken();
@@ -87,7 +86,7 @@ public class Parser implements IPLPParser {
 	}
 
 	public void statement() throws Exception {
-		//callToken();
+		// callToken();
 		switch (kind) {
 		case KW_LET: {
 		}
@@ -99,7 +98,7 @@ public class Parser implements IPLPParser {
 		}
 			break;
 		case KW_WHILE: {
-			callToken(); 
+			callToken();
 			expression();
 			callToken();
 			if (kind == Kind.KW_DO) {
@@ -119,12 +118,12 @@ public class Parser implements IPLPParser {
 		// case IDENTIFIER:
 		default: {
 			expression();
-			//callToken();
+			// callToken();
 			if (kind == Kind.ASSIGN) {
 				callToken();
 				expression();
 			}
-				
+
 			callToken();
 		}
 			if (kind != Kind.SEMI)
@@ -133,7 +132,7 @@ public class Parser implements IPLPParser {
 	}
 
 	public void nameDef() throws Exception {
-		//callToken();
+		// callToken();
 		if (kind == Kind.COLON) {
 			callToken();
 			type();
@@ -195,7 +194,7 @@ public class Parser implements IPLPParser {
 	public void primaryExpression() throws Exception {
 		// token = lexerInput.nextToken();
 		// kind = token.getKind();
-		//callToken();
+		// callToken();
 		switch (kind) {
 		case KW_NIL: {
 		}
@@ -239,8 +238,9 @@ public class Parser implements IPLPParser {
 				}
 			}
 				break;
-				default: break;
-				
+			default:
+				break;
+
 			}
 
 		}
@@ -253,7 +253,7 @@ public class Parser implements IPLPParser {
 	}
 
 	public void type() throws Exception {
-		//callToken();
+		// callToken();
 		switch (kind) {
 		case KW_INT: {
 		}
@@ -269,7 +269,7 @@ public class Parser implements IPLPParser {
 			if (kind == Kind.LSQUARE) {
 				callToken();
 				// while(kind !=Kind.RSQUARE)
-				if(kind == Kind.RSQUARE)
+				if (kind == Kind.RSQUARE)
 					callToken();
 				else
 					type();
@@ -298,14 +298,43 @@ public class Parser implements IPLPParser {
 				function();
 				break;
 			case KW_VAR: {
-				//should check var production
+				callToken();
+				if (kind == Kind.IDENTIFIER) {
+					callToken();
+					nameDef();
+					// callToken();
+					if (kind == Kind.ASSIGN) {
+						expression();
+						callToken();
+					}
+					if (kind != Kind.SEMI)
+						throw new SyntaxException("invalid 13 token", 1, 1);
+				} else
+					throw new SyntaxException("invalid 14 token", 1, 1);
 				// nextToken() should be either a LPRAN or Assign
 				// expression();
 				// should end with semi colon;
 			}
 				break;
 			case KW_VAL: {
-				//should check val production
+				callToken();
+				if (kind == Kind.IDENTIFIER) {
+					callToken();
+					nameDef();
+					callToken();
+					if (kind == Kind.ASSIGN) {
+						callToken();
+						expression();
+						callToken();
+					} else
+						throw new SyntaxException("invalid 16 token", 1, 1);
+					if (kind != Kind.SEMI)
+						throw new SyntaxException("invalid 17 token", 1, 1);
+				} else
+					throw new SyntaxException("invalid 14 token", 1, 1);
+				// nextToken() should be Assign
+				// expression();
+				// should end with semi colon
 			}
 				break;
 			default:
