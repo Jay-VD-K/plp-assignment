@@ -1,9 +1,11 @@
-package edu.ufl.cise.plpfa21.assignment2;
+package edu.ufl.cise.plpfa21.assignment1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
+
+import edu.ufl.cise.plpfa21.assignment1.PLPTokenKinds.Kind;
 
 class ExampleLexerTests implements PLPTokenKinds {
 
@@ -177,6 +179,55 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(kind, Kind.EOF);
 		}
 	}
+	
+	@Test
+	public void test25() throws LexicalException {
+		String input = """
+				VAL a: STRING = "hello";
+				""";
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_VAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.IDENTIFIER);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.COLON);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_STRING);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.ASSIGN);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.STRING_LITERAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.SEMI);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.EOF);
+		}
+	}
+
 
 	@Test
 	public void test4() throws LexicalException {

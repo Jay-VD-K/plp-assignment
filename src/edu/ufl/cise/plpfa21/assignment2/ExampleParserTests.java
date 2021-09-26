@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import edu.ufl.cise.plpfa21.assignment2.CompilerComponentFactory;
+import edu.ufl.cise.plpfa21.assignment1.CompilerComponentFactory;
 
 
 class ExampleParserTests {
@@ -90,8 +90,4 @@ class ExampleParserTests {
 		""";
 		syntaxErrorParse(input,2,19);
 		}
-
-
-	
-
 }
