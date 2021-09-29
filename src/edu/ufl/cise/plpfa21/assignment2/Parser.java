@@ -24,10 +24,10 @@ public class Parser implements IPLPParser {
 	}
 
 	public void program() throws Exception {
-		if (kind != Kind.EOF) {
+		while(kind != Kind.EOF) {
 			declaration();
-		} else
-			return;
+		}
+		
 	}
 
 	public void declaration() throws Exception {
@@ -139,7 +139,7 @@ public class Parser implements IPLPParser {
 
 	public void block() throws Exception {
 		// callToken();
-		while (kind != Kind.KW_END && kind != Kind.KW_DEFAULT && kind != Kind.EOF) {
+		while (kind != Kind.KW_DEFAULT && kind != Kind.KW_END && kind != Kind.EOF) {
 			statement();
 		}
 		// need to check for multiple types of statement *
@@ -165,9 +165,11 @@ public class Parser implements IPLPParser {
 				throw new SyntaxException("invalid 10 token", line, pos);
 		}
 			break;
-		case KW_SWITCH: {
+		case KW_SWITCH, KW_CASE: {
 			callToken();
 			expression();
+			//if(kind == Kind.KW_CASE) {
+				
 			while (kind != kind.KW_DEFAULT) {
 				callToken();
 				expression();
@@ -187,6 +189,10 @@ public class Parser implements IPLPParser {
 					throw new SyntaxException("end  not found 3", line, pos);
 			} else
 				throw new SyntaxException("error syntax 2", line, pos);
+
+			//}
+			//else
+			//	throw new SyntaxException("error syntax 6", line, pos);
 		}
 			break;
 		case KW_IF: {
@@ -424,6 +430,10 @@ public class Parser implements IPLPParser {
 			callToken();
 			System.out.println("new token " + token + "token kind" + kind);
 			program();
+			if(kind==kind.EOF)
+				return;
+			else
+				throw new SyntaxException("invalid 15 token", line, pos);
 			/// for second token
 		}
 
