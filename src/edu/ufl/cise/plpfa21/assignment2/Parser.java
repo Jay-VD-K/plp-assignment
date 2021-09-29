@@ -428,7 +428,7 @@ public class Parser implements IPLPParser {
 		// IPLPLexer lexer = lexerInput.getLexer(input);
 		{
 			callToken();
-			System.out.println("new token " + token + "token kind" + kind);
+			//System.out.println("new token " + token + "token kind" + kind);
 			program();
 			if(kind==kind.EOF)
 				return;
