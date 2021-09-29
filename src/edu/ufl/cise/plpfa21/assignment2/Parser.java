@@ -46,10 +46,12 @@ public class Parser implements IPLPParser {
 					expression();
 					// callToken();
 				}
-				if (kind != Kind.SEMI)
-					throw new SyntaxException("invalid 13 token", 1, 1);
+				if (kind == Kind.SEMI)
+					callToken();
+				else
+					throw new SyntaxException("semi not found 0", line, pos);
 			} else
-				throw new SyntaxException("invalid 14 token", 1, 1);
+				throw new SyntaxException("syntax error", line, pos);
 			// nextToken() should be either a LPRAN or Assign
 			// expression();
 			// should end with semi colon;
@@ -66,18 +68,20 @@ public class Parser implements IPLPParser {
 					expression();
 					// callToken();
 				} else
-					throw new SyntaxException("invalid 16 token", 1, 1);
-				if (kind != Kind.SEMI)
-					throw new SyntaxException("invalid 17 token", 1, 1);
+					throw new SyntaxException("invalid token 1", line, pos);
+				if (kind == Kind.SEMI)
+					callToken();
+				else
+					throw new SyntaxException("semi not found 2", line, pos);
 			} else
-				throw new SyntaxException("invalid 14 token", 1, 1);
+				throw new SyntaxException("invalid token 3", line, pos);
 			// nextToken() should be Assign
 			// expression();
 			// should end with semi colon
 		}
 			break;
 		default:
-			throw new SyntaxException("invalid 9 token", 1, 1);
+			throw new SyntaxException("invalid token 4", line, pos);
 
 		}
 	}
@@ -100,7 +104,7 @@ public class Parser implements IPLPParser {
 							callToken();
 							nameDef();
 						} else
-							throw new SyntaxException("fail 14 token", 1, 1);
+							throw new SyntaxException("invalid token 5", line, pos);
 					}
 					// need to check for multiple nameDefs
 					// should check for rparen after nameDef ->
@@ -118,22 +122,24 @@ public class Parser implements IPLPParser {
 						block();
 						// token = lexerInput.nextToken();
 						// kind = token.getKind();
-						if (kind != Kind.KW_END)
-							throw new SyntaxException("fail 1 token", 1, 1);
+						if (kind == Kind.KW_END)
+							callToken();
+						else
+							throw new SyntaxException("end not found", line, pos);
 					} else
-						throw new SyntaxException("invalid 2 token", 1, 1);
+						throw new SyntaxException("invalid token 6", line, pos);
 				} else
-					throw new SyntaxException("invalid 3 token", 1, 1);
+					throw new SyntaxException("invalid 7 token", line, pos);
 			} else
-				throw new SyntaxException("invalid 4 token", 1, 1);
+				throw new SyntaxException("invalid 8 token", line, pos);
 		} else
-			throw new SyntaxException("invalid 5 token", 1, 1);
+			throw new SyntaxException("invalid 9 token", line, pos);
 
 	}
 
 	public void block() throws Exception {
 		// callToken();
-		while (kind != Kind.KW_END || kind != Kind.KW_DEFAULT) {
+		while (kind != Kind.KW_END && kind != Kind.KW_DEFAULT && kind != Kind.EOF) {
 			statement();
 		}
 		// need to check for multiple types of statement *
@@ -145,21 +151,24 @@ public class Parser implements IPLPParser {
 		case KW_LET: {
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
+				callToken();
 				nameDef();
 				if (kind == Kind.ASSIGN) {
 					callToken();
 					expression();
 				}
-				if (kind != Kind.SEMI)
-					throw new SyntaxException("semi not found", line, pos);
+				if (kind == Kind.SEMI)
+					callToken();
+				else
+					throw new SyntaxException("semi not found 4", line, pos);
 			} else
-				throw new SyntaxException("invalid 20 token", 1, 1);
+				throw new SyntaxException("invalid 10 token", line, pos);
 		}
 			break;
 		case KW_SWITCH: {
 			callToken();
 			expression();
-			while (kind == kind.KW_CASE) {
+			while (kind != kind.KW_DEFAULT) {
 				callToken();
 				expression();
 				if (kind == Kind.COLON) {
@@ -171,10 +180,13 @@ public class Parser implements IPLPParser {
 			if (kind == Kind.KW_DEFAULT) {
 				callToken();
 				block();
-				if (kind != Kind.KW_END)
-					throw new SyntaxException("error syntax1", line, pos);
+				if (kind == Kind.KW_END)
+					callToken();
+				// break;}
+				else
+					throw new SyntaxException("end  not found 3", line, pos);
 			} else
-				throw new SyntaxException("error syntax2", line, pos);
+				throw new SyntaxException("error syntax 2", line, pos);
 		}
 			break;
 		case KW_IF: {
@@ -183,7 +195,9 @@ public class Parser implements IPLPParser {
 			if (kind == Kind.KW_DO) {
 				callToken();
 				block();
-				if (kind != Kind.KW_END)
+				if (kind == Kind.KW_END)
+					callToken();
+				else
 					throw new SyntaxException("error syntax3", line, pos);
 			} else
 				throw new SyntaxException("error syntax4", line, pos);
@@ -196,16 +210,20 @@ public class Parser implements IPLPParser {
 			if (kind == Kind.KW_DO) {
 				callToken();
 				block();
-				if (kind != Kind.KW_END)
-					throw new SyntaxException("invalid 6 token", 1, 1);
+				if (kind == Kind.KW_END)
+					callToken();
+				else
+					throw new SyntaxException("end not found 4", line, pos);
 			} else
-				throw new SyntaxException("invalid 7 token", 1, 1);
+				throw new SyntaxException("invalid 11 token", line, pos);
 		}
 			break;
 		case KW_RETURN: {
 			callToken();
 			expression();
-			if (kind != Kind.SEMI)
+			if (kind == Kind.SEMI)
+				callToken();
+			else
 				throw new SyntaxException("semi not found 3", line, pos);
 		}
 			break;
@@ -218,7 +236,9 @@ public class Parser implements IPLPParser {
 				expression();
 			}
 			// callToken(); //why is this being called? check.
-			if (kind != Kind.SEMI)
+			if (kind == Kind.SEMI)
+				callToken();
+			else
 				throw new SyntaxException("semi not found", line, pos);
 		}
 		}
@@ -310,8 +330,10 @@ public class Parser implements IPLPParser {
 			callToken();
 			expression();
 			// callToken();
-			if (kind != Kind.RPAREN)
-				throw new SyntaxException("invalid 8 token", 1, 1);
+			if (kind == Kind.RPAREN)
+				callToken();
+			else
+				throw new SyntaxException("rpran not found", line, pos);
 		}
 			break;
 		case IDENTIFIER: {
@@ -323,8 +345,10 @@ public class Parser implements IPLPParser {
 				callToken();
 				expression();
 				// callToken();
-				if (kind != Kind.RSQUARE)
-					throw new SyntaxException("invalid 8 token", 1, 1);
+				if (kind == Kind.RSQUARE)
+					callToken();
+				else
+					throw new SyntaxException("rsquare not found", line, pos);
 			}
 				break;
 			case LPAREN: {
@@ -335,6 +359,10 @@ public class Parser implements IPLPParser {
 					callToken();
 					expression();
 				}
+				if (kind == Kind.RPAREN)
+					callToken();
+				else
+					throw new SyntaxException("rpran not found", line, pos);
 			}
 				break;
 			default:
@@ -345,7 +373,7 @@ public class Parser implements IPLPParser {
 		}
 			break;
 		default:
-			throw new SyntaxException("invalid 12 token", 1, 1);
+			throw new SyntaxException("invalid 12 token", line, pos);
 		}
 		// callToken();
 
@@ -370,13 +398,19 @@ public class Parser implements IPLPParser {
 				// while(kind !=Kind.RSQUARE)
 				if (kind == Kind.RSQUARE)
 					callToken();
-				else
+				else {
 					type();
+					if (kind == Kind.RSQUARE)
+						callToken();
+					else
+						throw new SyntaxException("invalid 14 token", line, pos);
+				}
+
 			}
 		}
 			break;
 		default:
-			throw new SyntaxException("invalid 10 token", 1, 1);
+			throw new SyntaxException("invalid 13 token", line, pos);
 		}
 	}
 
