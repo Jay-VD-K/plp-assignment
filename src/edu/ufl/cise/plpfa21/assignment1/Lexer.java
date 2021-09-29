@@ -7,6 +7,7 @@ public class Lexer implements IPLPLexer {
 	public String input;
 	public String parentInput;
 	int pos = 0;
+	int line =1;
 
 	public Lexer(String input) {
 		this.input = input;
@@ -17,23 +18,13 @@ public class Lexer implements IPLPLexer {
 		while (input.charAt(i) == ' ') {
 			i++;
 		}
+		//input=input.substring(i);
+		//i=0;
 		return i;
 	}
 
 	public int removeComment(String input, int i) throws LexicalException {
-		i += 2;
-		try {
-			while (input.charAt(i) != '*' && input.charAt(i + 1) != '/') {
-				i++;
-				// input=input.substring(i);
-			}
-		} catch (Exception e) {
-			throw new LexicalException("invalid comment", 1, 1);
-		}
-		i += 2;
-		if (input.charAt(i) == ' ') {
-			i = checkSpace(input, i);
-		}
+		
 		return i;
 
 	}
@@ -41,17 +32,20 @@ public class Lexer implements IPLPLexer {
 	@Override
 	public IPLPToken nextToken() throws LexicalException {
 		int startPos = pos;
+		int startLine =line;
 		String s = "";
 		int flag = 0, i = 0, count = 0;
 		if (input.charAt(0) == '\n') {
 			s += input.charAt(0);
 			pos = 0;
-			return new Tokens(s, parentInput, startPos);
+			line++;
+			return new Tokens(s, parentInput, startPos, startLine);
 		} else if ((input.charAt(0) == '\r' && input.charAt(1) == '\n')) {
 			s += input.charAt(0);
 			s += input.charAt(1);
 			pos = 0;
-			return new Tokens(s, parentInput, startPos);
+			line++;
+			return new Tokens(s, parentInput, startPos, startLine);
 		} else if (input.charAt(0) == ' ') {
 			i = checkSpace(input, i);
 			pos += i;
@@ -59,11 +53,12 @@ public class Lexer implements IPLPLexer {
 		}
 
 		for (; i < input.length() - 1; i++) {
-
+			
 			switch (input.charAt(i)) {
 			case '\n': {
 				input = input.substring(i + 1);
 				pos = 0;
+				line++;
 				flag = 1;
 			}
 				break;
@@ -83,9 +78,12 @@ public class Lexer implements IPLPLexer {
 					s += input.charAt(i + 1);
 					pos++;
 					input = input.substring(i + 2);
-					return new Tokens(s, parentInput, startPos);
-				} else
-					throw new LexicalException("invalid token", 1, 1);
+					return new Tokens(s, parentInput, startPos, startLine);
+				} else {
+					int lineNumber = new Tokens(s, parentInput, startPos,startLine).getLine();
+					int posNumber = new Tokens(s, parentInput, startPos,startLine).getCharPositionInLine();
+					throw new LexicalException("invalid token", lineNumber, posNumber);
+				}
 			}
 			case '|': {
 				s += input.charAt(i);
@@ -95,9 +93,13 @@ public class Lexer implements IPLPLexer {
 					s += input.charAt(i + 1);
 					pos++;
 					input = input.substring(i + 2);
-					return new Tokens(s, parentInput, startPos);
+					return new Tokens(s, parentInput, startPos, startLine);
 				} else
-					throw new LexicalException("invalid token", 1, 1);
+				{
+					int lineNumber = new Tokens(s, parentInput, startPos, startLine).getLine();
+					int posNumber = new Tokens(s, parentInput, startPos, startLine).getCharPositionInLine();
+					throw new LexicalException("invalid token", lineNumber, posNumber);
+				}
 			}
 			case '=': {
 				s += input.charAt(i);
@@ -108,10 +110,10 @@ public class Lexer implements IPLPLexer {
 					pos++;
 
 					input = input.substring(i + 2);
-					return new Tokens(s, parentInput, startPos);
+					return new Tokens(s, parentInput, startPos, startLine);
 				}
 				input = input.substring(i + 1);
-				return new Tokens(s, parentInput, startPos);
+				return new Tokens(s, parentInput, startPos, startLine);
 			}
 			case '!': {
 				s += input.charAt(i);
@@ -122,24 +124,54 @@ public class Lexer implements IPLPLexer {
 					pos++;
 
 					input = input.substring(i + 2);
-					return new Tokens(s, parentInput, startPos);
+					return new Tokens(s, parentInput, startPos, startLine);
 				}
 				input = input.substring(i + 1);
-				return new Tokens(s, parentInput, startPos);
+				return new Tokens(s, parentInput, startPos, startLine);
 			}
 			case '*', '+', '-', ';', ',', ':', '(', ')', '[', ']', '<', '>': {
 				s += input.charAt(i);
 				pos++;
 
 				input = input.substring(i + 1);
-				return new Tokens(s, parentInput, startPos);
+				if(input.charAt(0)=='\n' && input.length()!=1)
+				{i=i-1;
+				//line++;
+				//pos=0;
+					break;}
+				else
+				return new Tokens(s, parentInput, startPos, startLine);
 			}
 
 			case '/': {
 				if (input.charAt(i) == '/' && input.charAt(i + 1) == '*') {
-					i = removeComment(input, i) - 1;
-					pos = i + 1;
-					startPos = i + 1;
+					//i = removeComment(input, i) - 1;
+					//int temp=i;
+					////////////////////////////////
+					i += 2;
+					pos +=2;
+					try {
+						while (input.charAt(i) != '*' && input.charAt(i + 1) != '/') {
+							i++;
+							pos++;
+							//input=input.substring(pos);
+						}
+						input=input.substring(i+2);
+						i=0;
+					} catch (Exception e) {
+						int lineNumber = new Tokens(s, parentInput, startPos,startLine).getLine();
+						int posNumber = new Tokens(s, parentInput, startPos,startLine).getCharPositionInLine();
+						throw new LexicalException("invalid comment", lineNumber, posNumber);
+					}
+					//i += 2;
+					pos +=2;
+					if (input.charAt(i) == ' ') {
+						i = checkSpace(input, i)-1;
+					}
+					///////////////////////////////
+					
+					//pos = i + 1;
+					startPos = pos + 1;
 					// input=input.substring(pos,input.length()-1);
 					continue;
 				} else {
@@ -147,37 +179,49 @@ public class Lexer implements IPLPLexer {
 					pos++;
 
 					input = input.substring(i + 1);
-					return new Tokens(s, parentInput, startPos);
+					return new Tokens(s, parentInput, startPos, startLine);
 				}
 
 			}
 			case '\"': {
+				int temp=0;
 				if (input.length() >= 2) {
 					Pattern stringPattern = Pattern.compile("(\"[^\"]*\")");
 					Matcher match = stringPattern.matcher(input);
 					if (match.find()) {
 						s += match.group(1);
 						
-						input = input.substring(s.length(), input.length());
+						input = input.substring(i+s.length(), input.length());
 						pos += s.length();
 						//i=pos-1;
 						if(input.charAt(0)=='\n' && input.length()!=1) {
 							input = input.substring(1);
 							pos = 0;
+							line++;
 							flag = 1;
 						}
 						for(int a=0; a<s.length()-1; a++) {
-							if(s.charAt(a)=='\n')
+							if(s.charAt(a)=='\n') {
 								pos=0;
+								line++;
+								temp=a;
+							}
 						}
-						return new Tokens(s, parentInput, startPos);
+						while(s.charAt(temp)!='\"') {
+							pos++;
+							temp++;
+						}
+						
+						return new Tokens(s, parentInput, startPos, startLine);
 
 					} else {
 						//throw new LexicalException("incomplete string literal", 1, 1);
-						return new Tokens("\n", parentInput, startPos);
+						return new Tokens("\n", parentInput, startPos, startLine);
 					}
 				} else {
-					throw new LexicalException("Invalid token", 1, 1);
+					int lineNumber = new Tokens(s, parentInput, startPos,line).getLine();
+					int posNumber = new Tokens(s, parentInput, startPos,line).getCharPositionInLine();
+					throw new LexicalException("Invalid token", lineNumber, posNumber);
 				}
 			}
 
@@ -189,13 +233,26 @@ public class Lexer implements IPLPLexer {
 						s += match.group(1);
 						input = input.substring(s.length(), input.length());
 						pos += s.length();
-						return new Tokens(s, parentInput, startPos);
+						if(input.charAt(0)=='\n' && input.length()!=1) {
+							input = input.substring(1);
+							pos = 0;
+							line++;
+							flag = 1;
+						}
+						for(int a=0; a<s.length()-1; a++) {
+							if(s.charAt(a)=='\n')
+								{pos=0;
+							line++;}
+						}
+						return new Tokens(s, parentInput, startPos, startLine);
 
 					} else {
-						throw new LexicalException("incomplete string literal", 1, 1);
+						return new Tokens("\n", parentInput, startPos,startLine);
 					}
 				} else {
-					throw new LexicalException("Invalid token", 1, 1);
+					int lineNumber = new Tokens(s, parentInput, startPos,line).getLine();
+					int posNumber = new Tokens(s, parentInput, startPos, line).getCharPositionInLine();
+					throw new LexicalException("Invalid token", lineNumber, posNumber);
 				}
 			}
 
@@ -207,25 +264,40 @@ public class Lexer implements IPLPLexer {
 						|| ((int) input.charAt(i + 1) >= 65 && (int) input.charAt(i + 1) <= 90)) {
 					input = input.substring(i + 1);
 					// pos++;
-					return new Tokens(s, parentInput, startPos);
+					if(input.charAt(0)=='\n' && input.length()!=1)
+					{i=-1;
+					//pos=0;
+					//line++;
+						break;}
+					else
+					return new Tokens(s, parentInput, startPos, startLine);
+					//return new Tokens(s, parentInput, startPos, line);
 				}
 				switch (input.charAt(i + 1)) {
 				case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9': {
 					count++;
 					if (count > 10) {
 						count = 0;
-						int lineNumber = new Tokens(s, parentInput, startPos).getLine();
-						int posNumber = new Tokens(s, parentInput, startPos).getCharPositionInLine();
+						int lineNumber = new Tokens(s, parentInput, startPos, line).getLine();
+						int posNumber = new Tokens(s, parentInput, startPos, line).getCharPositionInLine();
 						throw new LexicalException("integer outofbound", lineNumber, posNumber);
 					}
 					continue;
 				}
 				default: {
 					input = input.substring(i + 1);
-					return new Tokens(s, parentInput, startPos);
+					if(input.charAt(0)=='\n' && input.length()!=1)
+					{i=-1;
+					//pos=0;
+					//line++;
+						break;}
+					else
+					return new Tokens(s, parentInput, startPos, startLine);
+					//return new Tokens(s, parentInput, startPos, line);
 				}
 				}
 			}
+			break;
 			default:
 				if (((int) input.charAt(i) >= 97 && (int) input.charAt(i) <= 122)
 						|| ((int) input.charAt(i) >= 65 && (int) input.charAt(i) <= 90) || ((int) input.charAt(i) == 95)
@@ -237,7 +309,7 @@ public class Lexer implements IPLPLexer {
 						pos++;
 
 						input = input.substring(i + 1);
-						return new Tokens(s, parentInput, startPos);
+						return new Tokens(s, parentInput, startPos, startLine);
 					}
 					default:
 
@@ -245,9 +317,10 @@ public class Lexer implements IPLPLexer {
 							{
 								s += input.charAt(i);
 								pos = 0;
+								line++;
 
 								input = input.substring(i + 1);
-								return new Tokens(s, parentInput, startPos);
+								return new Tokens(s, parentInput, startPos, startLine);
 							}
 						}
 
@@ -258,7 +331,9 @@ public class Lexer implements IPLPLexer {
 					}
 
 				} else {
-					throw new LexicalException("invalid token", 1, 1);
+					int lineNumber = new Tokens(s, parentInput, startPos, startLine).getLine();
+					int posNumber = new Tokens(s, parentInput, startPos,line).getCharPositionInLine();
+					throw new LexicalException("invalid token", lineNumber, posNumber);
 				}
 			}
 
@@ -266,6 +341,6 @@ public class Lexer implements IPLPLexer {
 				break;
 			}
 		}
-		return new Tokens(s, parentInput, startPos);
+		return new Tokens(s, parentInput, startPos, startLine);
 	}
 }

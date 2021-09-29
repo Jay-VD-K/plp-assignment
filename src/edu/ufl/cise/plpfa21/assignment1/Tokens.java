@@ -3,14 +3,15 @@ package edu.ufl.cise.plpfa21.assignment1;
 public class Tokens implements IPLPToken {
 
 	String input, parentInput;
-	int pos;
+	int pos, line;
 	static int length = 0;
 
-	public Tokens(String input, String parentInput, int pos) {
+	public Tokens(String input, String parentInput, int pos, int line) {
 		this.input = input;
 		this.parentInput = parentInput;
 		this.parent = parentInput;
 		this.pos = pos;
+		this.line = line;
 	}
 
 	String parent = parentInput;
@@ -179,7 +180,7 @@ public class Tokens implements IPLPToken {
 
 	@Override
 	public int getLine() {
-		int l = parentInput.indexOf(input);
+		/*int l = parentInput.indexOf(input);
 		int count = 1;
 		for (int i = 0; i < l; i++) {
 			if ((int) parentInput.charAt(i) == 10)
@@ -188,7 +189,8 @@ public class Tokens implements IPLPToken {
 			}
 			
 		}
-		return count;
+		return count;*/
+		return line;
 
 	}
 
