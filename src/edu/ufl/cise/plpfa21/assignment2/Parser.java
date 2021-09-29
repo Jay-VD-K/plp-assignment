@@ -139,7 +139,7 @@ public class Parser implements IPLPParser {
 
 	public void block() throws Exception {
 		// callToken();
-		while (kind != Kind.KW_DEFAULT && kind != Kind.KW_END && kind != Kind.EOF) {
+		while (kind != Kind.KW_DEFAULT && kind != Kind.KW_END && kind != Kind.EOF && kind != Kind.KW_CASE) {
 			statement();
 		}
 		// need to check for multiple types of statement *
