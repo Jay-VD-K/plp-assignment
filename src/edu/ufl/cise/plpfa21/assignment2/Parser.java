@@ -176,7 +176,7 @@ public class Parser implements IPLPParser {
 			expression();
 			// if(kind == Kind.KW_CASE) {
 
-			while (kind != kind.KW_DEFAULT) {
+			while (kind != Kind.KW_DEFAULT) {
 				callToken();
 				expression();
 				if (kind == Kind.COLON) {
@@ -458,7 +458,7 @@ public class Parser implements IPLPParser {
 			callToken();
 			// System.out.println("new token " + token + "token kind" + kind);
 			program();
-			if (kind == kind.EOF)
+			if (kind == Kind.EOF)
 				return;
 			else
 				throw new SyntaxException("invalid 15 syntax", line, pos);
