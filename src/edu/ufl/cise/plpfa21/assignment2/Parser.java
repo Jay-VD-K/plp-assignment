@@ -24,10 +24,10 @@ public class Parser implements IPLPParser {
 	}
 
 	public void program() throws Exception {
-		while(kind != Kind.EOF) {
+		while (kind != Kind.EOF) {
 			declaration();
 		}
-		
+
 	}
 
 	public void declaration() throws Exception {
@@ -68,20 +68,20 @@ public class Parser implements IPLPParser {
 					expression();
 					// callToken();
 				} else
-					throw new SyntaxException("invalid token 1", line, pos);
+					throw new SyntaxException("invalid syntax 1", line, pos);
 				if (kind == Kind.SEMI)
 					callToken();
 				else
 					throw new SyntaxException("semi not found 2", line, pos);
 			} else
-				throw new SyntaxException("invalid token 3", line, pos);
+				throw new SyntaxException("invalid syntax 3", line, pos);
 			// nextToken() should be Assign
 			// expression();
 			// should end with semi colon
 		}
 			break;
 		default:
-			throw new SyntaxException("invalid token 4", line, pos);
+			throw new SyntaxException("invalid syntax 4", line, pos);
 
 		}
 	}
@@ -104,7 +104,7 @@ public class Parser implements IPLPParser {
 							callToken();
 							nameDef();
 						} else
-							throw new SyntaxException("invalid token 5", line, pos);
+							throw new SyntaxException("invalid synatx 5", line, pos);
 					}
 					// need to check for multiple nameDefs
 					// should check for rparen after nameDef ->
@@ -119,26 +119,32 @@ public class Parser implements IPLPParser {
 					}
 					if (kind == Kind.KW_DO) {
 						callToken();
-						block();
+
 						// token = lexerInput.nextToken();
 						// kind = token.getKind();
 						if (kind == Kind.KW_END)
 							callToken();
-						else
-							throw new SyntaxException("end not found", line, pos);
+						else {
+							block();
+							if (kind == Kind.KW_END)
+								callToken();
+							else
+								throw new SyntaxException("end not found", line, pos);
+						}
 					} else
-						throw new SyntaxException("invalid token 6", line, pos);
+						throw new SyntaxException("invalid syntax 6", line, pos);
 				} else
-					throw new SyntaxException("invalid 7 token", line, pos);
+					throw new SyntaxException("invalid 7 synatx", line, pos);
 			} else
-				throw new SyntaxException("invalid 8 token", line, pos);
+				throw new SyntaxException("invalid 8 syntax", line, pos);
 		} else
-			throw new SyntaxException("invalid 9 token", line, pos);
+			throw new SyntaxException("invalid 9 syntax", line, pos);
 
 	}
 
 	public void block() throws Exception {
 		// callToken();
+
 		while (kind != Kind.KW_DEFAULT && kind != Kind.KW_END && kind != Kind.EOF && kind != Kind.KW_CASE) {
 			statement();
 		}
@@ -165,34 +171,41 @@ public class Parser implements IPLPParser {
 				throw new SyntaxException("invalid 10 token", line, pos);
 		}
 			break;
-		case KW_SWITCH, KW_CASE: {
+		case KW_SWITCH: {
 			callToken();
 			expression();
-			//if(kind == Kind.KW_CASE) {
-				
+			// if(kind == Kind.KW_CASE) {
+
 			while (kind != kind.KW_DEFAULT) {
 				callToken();
 				expression();
 				if (kind == Kind.COLON) {
 					callToken();
-					block();
+					if (kind != Kind.KW_CASE)
+						block();
+					else
+						continue;
 				} else
 					throw new SyntaxException("error syntax", line, pos);
 			}
 			if (kind == Kind.KW_DEFAULT) {
 				callToken();
-				block();
 				if (kind == Kind.KW_END)
 					callToken();
-				// break;}
-				else
-					throw new SyntaxException("end  not found 3", line, pos);
+				else {
+					block();
+					if (kind == Kind.KW_END)
+						callToken();
+
+					else
+						throw new SyntaxException("end  not found 3", line, pos);
+				}
 			} else
 				throw new SyntaxException("error syntax 2", line, pos);
 
-			//}
-			//else
-			//	throw new SyntaxException("error syntax 6", line, pos);
+			// }
+			// else
+			// throw new SyntaxException("error syntax 6", line, pos);
 		}
 			break;
 		case KW_IF: {
@@ -200,11 +213,16 @@ public class Parser implements IPLPParser {
 			expression();
 			if (kind == Kind.KW_DO) {
 				callToken();
-				block();
+
 				if (kind == Kind.KW_END)
 					callToken();
-				else
-					throw new SyntaxException("error syntax3", line, pos);
+				else {
+					block();
+					if (kind == Kind.KW_END)
+						callToken();
+					else
+						throw new SyntaxException("error syntax3", line, pos);
+				}
 			} else
 				throw new SyntaxException("error syntax4", line, pos);
 		}
@@ -215,13 +233,18 @@ public class Parser implements IPLPParser {
 			// callToken();
 			if (kind == Kind.KW_DO) {
 				callToken();
-				block();
+
 				if (kind == Kind.KW_END)
 					callToken();
-				else
-					throw new SyntaxException("end not found 4", line, pos);
+				else {
+					block();
+					if (kind == Kind.KW_END)
+						callToken();
+					else
+						throw new SyntaxException("end not found 4", line, pos);
+				}
 			} else
-				throw new SyntaxException("invalid 11 token", line, pos);
+				throw new SyntaxException("invalid 11 syntax", line, pos);
 		}
 			break;
 		case KW_RETURN: {
@@ -379,7 +402,7 @@ public class Parser implements IPLPParser {
 		}
 			break;
 		default:
-			throw new SyntaxException("invalid 12 token", line, pos);
+			throw new SyntaxException("invalid 12 syntax", line, pos);
 		}
 		// callToken();
 
@@ -409,14 +432,14 @@ public class Parser implements IPLPParser {
 					if (kind == Kind.RSQUARE)
 						callToken();
 					else
-						throw new SyntaxException("invalid 14 token", line, pos);
+						throw new SyntaxException("invalid 14 syntax", line, pos);
 				}
 
 			}
 		}
 			break;
 		default:
-			throw new SyntaxException("invalid 13 token", line, pos);
+			throw new SyntaxException("invalid 13 syntax", line, pos);
 		}
 	}
 
@@ -428,12 +451,12 @@ public class Parser implements IPLPParser {
 		// IPLPLexer lexer = lexerInput.getLexer(input);
 		{
 			callToken();
-			//System.out.println("new token " + token + "token kind" + kind);
+			// System.out.println("new token " + token + "token kind" + kind);
 			program();
-			if(kind==kind.EOF)
+			if (kind == kind.EOF)
 				return;
 			else
-				throw new SyntaxException("invalid 15 token", line, pos);
+				throw new SyntaxException("invalid 15 syntax", line, pos);
 			/// for second token
 		}
 
