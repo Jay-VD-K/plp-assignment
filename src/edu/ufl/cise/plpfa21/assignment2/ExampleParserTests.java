@@ -218,7 +218,7 @@ class ExampleParserTests {
 		syntaxErrorParse(input, 1, 8);
 	}
 
-	//fun
+	// fun
 	@Test
 	public void test22() {
 		String input = """
@@ -228,14 +228,14 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
-	
+
 	@Test
 	public void test23() {
 		String input = """
 				FUN func(a, b:INT, c): INT DO
-				SWITCH x!="true" 
+				SWITCH x!="true"
 				CASE "x": IF x==x
-				DO x=x+1; 
+				DO x=x+1;
 				RETURN x;
 				END
 				DEFAULT LET abc=a[1234];
@@ -244,12 +244,13 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
-	//not wrking
+
+	// not wrking
 	@Test
 	public void test25() {
 		String input = """
 				FUN func() DO
-				SWITCH x 
+				SWITCH x
 				CASE x: IF x==x
 				DO RETURN x;
 				END
@@ -260,12 +261,12 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
-	
+
 	@Test
 	public void test28() {
 		String input = """
 				FUN func() DO
-				SWITCH x 
+				SWITCH x
 				CASE x: RETURN x;
 				CASE y: (a(TRUE,FALSE));
 				DEFAULT LET abc=a[1234];
@@ -274,13 +275,13 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
-	//till here
-	
+	// till here
+
 	@Test
 	public void test26() {
 		String input = """
 				FUN func() DO
-				SWITCH x 
+				SWITCH x
 				CASE y: (a(TRUE,FALSE));
 				DEFAULT LET abc=a[1234];
 				END
@@ -288,16 +289,16 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
-	
+
 	@Test
 	public void test24() {
 		String input = """
 				FUN func(a, b:INT, c): INT DO
-				SWITCH x!="true" 
+				SWITCH x!="true"
 				CASE "x": IF x==x+1;
-				DO x=x+1; 
+				DO x=x+1;
 				RETURN x;
-				END 
+				END
 				CASE y: (a(TRUE,FALSE));
 				DEFAULT LET abc=[1234];
 				END
@@ -305,12 +306,12 @@ class ExampleParserTests {
 				""";
 		syntaxErrorParse(input, 3, 19);
 	}
-	
+
 	@Test
 	public void test27() {
 		String input = """
 				FUN func() DO
-				SWITCH x 
+				SWITCH x
 				CASE y: (a(TRUE,FALSE));
 				DEFAULT LET abc=[1234];
 				END
@@ -318,7 +319,7 @@ class ExampleParserTests {
 				""";
 		syntaxErrorParse(input, 4, 16);
 	}
-	
+
 	@Test
 	public void test29() {
 		String input = """
@@ -331,17 +332,17 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
-	
+
 	@Test
 	public void test30() {
 		String input = """
 				FUN func() DO
-				SWITCH x 
+				SWITCH !x
 				CASE x: RETURN x;
 				CASE y: (a(TRUE,FALSE));
 				DEFAULT LET abc=a[1234];
 				END
-				IF x>0 && y>0 && Z>10
+				IF x>0 && y>0 && Z!=10
 				DO
 				x=x+y+z;
 				END
@@ -349,23 +350,65 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
-	
+
 	@Test
 	public void test31() {
 		String input = """
 				FUN func() DO
-				SWITCH x 
+				SWITCH x
 				CASE x: RETURN x;
-				CASE y: (a(TRUE,FALSE));
+				CASE y:
+				(a(TRUE,
+				FALSE));
+				CASE NIL: LET a=
+				"abc"
+				;
 				DEFAULT LET abc=a[1234];
 				END
-				WHILE x>0 && y>0 && Z>10
+				/*should ignore this */
+				/*should ignore this too */
+				WHILE x>0 ||
+				y>0 || Z<10
 				DO
-				x=x+y+z;
+				x=x*y-z;
 				END
 				END
 				""";
 		noErrorParse(input);
 	}
-	
+
+	@Test
+	public void test32() {
+		String input = """
+				FUN func() DO
+				WHILE !x == ;
+				CASE x: RETURN x;
+				CASE y: (a(TRUE,FALSE));
+				DEFAULT LET abc=a[1234];
+				END
+				END
+				""";
+		syntaxErrorParse(input, 2, 12);
+	}
+
+	@Test
+	public void test33() {
+		String input = """
+				FUN func() DO
+
+				END
+				""";
+		noErrorParse(input);
+	}
+
+	@Test
+	public void test34() {
+		String input = """
+				FUN func() DO
+						LET a = 2;
+				END
+				""";
+		noErrorParse(input);
+	}
+
 }
