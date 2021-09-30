@@ -382,6 +382,9 @@ public class Parser implements IPLPParser {
 				break;
 			case LPAREN: {
 				callToken();
+				if (kind == Kind.RPAREN)
+					callToken();
+				else {
 				expression();
 				// callToken();
 				while (kind == Kind.COMMA) {
@@ -390,8 +393,10 @@ public class Parser implements IPLPParser {
 				}
 				if (kind == Kind.RPAREN)
 					callToken();
+				
 				else
 					throw new SyntaxException("rpran not found", line, pos);
+				}
 			}
 				break;
 			default:

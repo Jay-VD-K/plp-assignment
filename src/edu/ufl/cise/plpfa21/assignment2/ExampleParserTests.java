@@ -410,5 +410,18 @@ class ExampleParserTests {
 				""";
 		noErrorParse(input);
 	}
+	
+	@Test
+	public void test35() {
+		String input = """
+				FUN func() DO
+				SWITCH !x
+				DEFAULT LET abc=a[1234];
+				END
+				a();
+				END
+				""";
+		noErrorParse(input);
+	}
 
 }
