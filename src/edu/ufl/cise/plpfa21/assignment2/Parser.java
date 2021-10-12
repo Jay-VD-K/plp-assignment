@@ -3,6 +3,11 @@ package edu.ufl.cise.plpfa21.assignment2;
 import edu.ufl.cise.plpfa21.assignment1.IPLPToken;
 import edu.ufl.cise.plpfa21.assignment1.Lexer;
 import edu.ufl.cise.plpfa21.assignment1.PLPTokenKinds.Kind;
+import edu.ufl.cise.plpfa21.assignment3.ast.IASTNode;
+import edu.ufl.cise.plpfa21.assignment3.ast.IProgram;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.Program__;
+
+import java.lang.UnsupportedOperationException;
 
 public class Parser implements IPLPParser {
 	public Lexer lexerInput;
@@ -14,6 +19,7 @@ public class Parser implements IPLPParser {
 	IPLPToken token;
 	Kind kind;
 	int line, pos;
+	String text;
 
 	// calls nextToken and Kind, assigns line and position => consumes token.
 	public void callToken() throws Exception {
@@ -21,13 +27,19 @@ public class Parser implements IPLPParser {
 		kind = token.getKind();
 		line = token.getLine();
 		pos = token.getCharPositionInLine();
+		text = token.getText();
 	}
 
-	public void program() throws Exception {
+	public Program__ program() throws Exception {
+		Program__ first = new Program__(line, pos, text, null);
+		// first(line, pos, text, null);
 		while (kind != Kind.EOF) {
 			declaration();
 		}
+		if (kind == Kind.EOF)
+			return first;
 
+		return null;
 	}
 
 	public void declaration() throws Exception {
@@ -385,17 +397,17 @@ public class Parser implements IPLPParser {
 				if (kind == Kind.RPAREN)
 					callToken();
 				else {
-				expression();
-				// callToken();
-				while (kind == Kind.COMMA) {
-					callToken();
 					expression();
-				}
-				if (kind == Kind.RPAREN)
-					callToken();
-				
-				else
-					throw new SyntaxException("rpran not found", line, pos);
+					// callToken();
+					while (kind == Kind.COMMA) {
+						callToken();
+						expression();
+					}
+					if (kind == Kind.RPAREN)
+						callToken();
+
+					else
+						throw new SyntaxException("rpran not found", line, pos);
 				}
 			}
 				break;
@@ -449,17 +461,19 @@ public class Parser implements IPLPParser {
 	}
 
 	@Override
-	public void parse() throws Exception {
+	public IASTNode parse() throws Exception {
 		// TODO Auto-generated method stub
 
 		// should call nextToken from instance of lexer
 		// IPLPLexer lexer = lexerInput.getLexer(input);
 		{
 			callToken();
+			Program__ first ;
 			// System.out.println("new token " + token + "token kind" + kind);
-			program();
+			first = program();
 			if (kind == Kind.EOF)
-				return;
+				return first;
+				//return (IASTNode) new UnsupportedOperationException();
 			else
 				throw new SyntaxException("invalid 15 syntax", line, pos);
 			/// for second token
