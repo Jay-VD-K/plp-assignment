@@ -223,7 +223,7 @@ class ExampleParserTests {
 	public void test22() {
 		String input = """
 				FUN func(a, b:INT):STRING DO
-				LET x=TRUE DO END;
+				LET x=TRUE DO END
 				END
 				""";
 		noErrorParse(input);
@@ -238,7 +238,7 @@ class ExampleParserTests {
 				DO x=x+1;
 				RETURN x;
 				END
-				DEFAULT LET abc=a[1234] DO END;
+				DEFAULT LET abc=a[1234] DO END
 				END
 				END
 				""";
@@ -255,7 +255,7 @@ class ExampleParserTests {
 				DO RETURN x;
 				END
 				CASE y: (a(TRUE,FALSE));
-				DEFAULT LET abc=c[1234] DO END;
+				DEFAULT LET abc=c[1234] DO END
 				END
 				END
 				""";
@@ -269,7 +269,7 @@ class ExampleParserTests {
 				SWITCH x
 				CASE x: RETURN x;
 				CASE y: (a(TRUE,FALSE));
-				DEFAULT LET abc=a[1234] DO END;
+				DEFAULT LET abc=a[1234] DO END
 				END
 				END
 				""";
@@ -283,7 +283,7 @@ class ExampleParserTests {
 				FUN func() DO
 				SWITCH x
 				CASE y: (a(TRUE,FALSE));
-				DEFAULT LET abc=a[1234]DO END;
+				DEFAULT LET abc=a[1234]DO END
 				END
 				END
 				""";
@@ -300,7 +300,7 @@ class ExampleParserTests {
 				RETURN x;
 				END
 				CASE y: (a(TRUE,FALSE));
-				DEFAULT LET abc=[1234] DO END;
+				DEFAULT LET abc=[1234] DO END
 				END
 				END
 				""";
@@ -310,10 +310,10 @@ class ExampleParserTests {
 	@Test
 	public void test27() {
 		String input = """
-				FUN func() DO
+				FUN func()	DO
 				SWITCH x
 				CASE y: (a(TRUE,FALSE));
-				DEFAULT LET abc=[1234] DO END;
+				DEFAULT LET abc=[1234] DO END
 				END
 				END
 				""";
@@ -340,7 +340,7 @@ class ExampleParserTests {
 				SWITCH !x
 				CASE x: RETURN x;
 				CASE y: (a(TRUE,FALSE));
-				DEFAULT LET abc=a[1234] DO END;
+				DEFAULT LET abc=a[1234] DO END
 				END
 				IF x>0 && y>0 && Z!=10
 				DO
@@ -364,8 +364,8 @@ class ExampleParserTests {
 				"abc"
 				DO 
 				END
-				;
-				DEFAULT LET abc=a[1234] DO END;
+				
+				DEFAULT LET abc=a[1234] DO END
 				END
 				/*should ignore this */
 				/*should ignore this too */
@@ -386,7 +386,7 @@ class ExampleParserTests {
 				WHILE !x == ;
 				CASE x: RETURN x;
 				CASE y: (a(TRUE,FALSE));
-				DEFAULT LET abc=a[1234] DO END;
+				DEFAULT LET abc=a[1234] DO END
 				END
 				END
 				""";
@@ -407,7 +407,7 @@ class ExampleParserTests {
 	public void test34() {
 		String input = """
 				FUN func() DO
-						LET a = 2		DO END;
+						LET a = 2		DO END
 				END
 				""";
 		noErrorParse(input);
@@ -418,7 +418,7 @@ class ExampleParserTests {
 		String input = """
 				FUN func() DO
 				SWITCH !x
-				DEFAULT LET abc=a[1234] DO END;
+				DEFAULT LET abc=a[1234] DO END
 				END
 				a();
 				END
