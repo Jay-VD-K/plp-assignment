@@ -82,10 +82,10 @@ public class Parser implements IPLPParser {
 			listD.add(second);
 		}
 		Program__ first = new Program__(line, pos, text, listD);
-		if (kind == Kind.EOF)
-			return first;
+		// if (kind == Kind.EOF)
+		return first;
 
-		throw new UnsupportedOperationException();
+		// throw new SyntaxException("invalid 15 syntax", line, pos);
 	}
 
 	public Declaration__ declaration() throws Exception {
@@ -240,7 +240,7 @@ public class Parser implements IPLPParser {
 			listStat.add(second);
 		}
 		// need to check for multiple types of statement *
-		first = new Block__(line, line, stringText, listStat);
+		first = new Block__(line, pos, text, listStat);
 		return first;
 	}
 
@@ -280,11 +280,7 @@ public class Parser implements IPLPParser {
 				} else
 					throw new SyntaxException("error syntax4", line, pos);
 
-				// ask if semi is required or to be removed????
-				if (kind == Kind.SEMI)
-					callToken();
-				else
-					throw new SyntaxException("semi not found 4", line, pos);
+				// ask if semi is required or to be removed???? -- to be removed.
 			} else
 				throw new SyntaxException("invalid 10 token", line, pos);
 
@@ -599,7 +595,8 @@ public class Parser implements IPLPParser {
 			// if has next [ ] then call expression() and check for ] or ( expression ,
 			// expression*) OR just identifier ->
 			IDName = new Identifier__(line, pos, text, text);
-			first = new IdentExpression__(line, pos, stringText, IDName);
+
+			first = new IdentExpression__(line, pos, text, IDName);
 			callToken();
 
 			switch (kind) {
