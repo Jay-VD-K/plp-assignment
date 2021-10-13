@@ -8,6 +8,7 @@ import edu.ufl.cise.plpfa21.assignment3.ast.IASTNode;
 import edu.ufl.cise.plpfa21.assignment3.ast.IDeclaration;
 import edu.ufl.cise.plpfa21.assignment3.ast.IExpression;
 import edu.ufl.cise.plpfa21.assignment3.ast.IFunctionCallExpression;
+import edu.ufl.cise.plpfa21.assignment3.ast.INameDef;
 import edu.ufl.cise.plpfa21.assignment3.ast.IStatement;
 import edu.ufl.cise.plpfa21.assignment3.ast.IType;
 import edu.ufl.cise.plpfa21.assignment3.ast.IType.TypeKind;
@@ -22,6 +23,7 @@ import edu.ufl.cise.plpfa21.assignment3.astimpl.IdentExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Identifier__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.ImmutableGlobal__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.IntLiteralExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.LetStatement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.ListType__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.MutableGlobal__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.NameDef__;
@@ -84,14 +86,13 @@ public class Parser implements IPLPParser {
 	}
 
 	public Declaration__ declaration() throws Exception {
-		Declaration__ first = null; // = new Declaration__(line,pos,text);
+		Declaration__ first = null;
 		switch (kind) {
 		case KW_FUN:
-			function();
+			first = function();
 			break;
 		case KW_VAR: {
-			NameDef__ NameDef; // = new NameDef__(line, pos, text, ID, null); // should have type instead of
-			// last null
+			NameDef__ NameDef; 
 			IExpression Exp = null;
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
@@ -113,23 +114,18 @@ public class Parser implements IPLPParser {
 			// nextToken() should be either a LPRAN or Assign
 			// expression();
 			// should end with semi colon;
-			first = new MutableGlobal__(line, pos, text, NameDef, Exp); // shuld have exp instead of last null
+			first = new MutableGlobal__(line, pos, text, NameDef, Exp); 
 		}
 			break;
 		case KW_VAL: {
-			// Identifier__ ID = new Identifier__(line, pos, text, "VAL");
-			NameDef__ NameDef; // = new NameDef__(line, pos, text, ID, null); // should have type instead of
-								// last null
+			NameDef__ NameDef; 
 			IExpression Exp;
 			// first = new FunctionDeclaration___(line,pos,text,ID,null);
-
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				Identifier__ ID1 = new Identifier__(line, pos, text, text);
 				callToken();
 				NameDef = nameDef(ID1);
-				// first = new ImmutableGlobal__(line, pos, text, NameDef, null); // shuld have
-				// exp instead of last null
 				// callToken();
 				if (kind == Kind.ASSIGN) {
 					callToken();
@@ -146,7 +142,7 @@ public class Parser implements IPLPParser {
 			// nextToken() should be Assign
 			// expression();
 			// should end with semi colon
-			first = new ImmutableGlobal__(line, pos, text, NameDef, Exp); // shuld have exp instead of last null
+			first = new ImmutableGlobal__(line, pos, text, NameDef, Exp); 
 		}
 			break;
 		default:
@@ -158,23 +154,35 @@ public class Parser implements IPLPParser {
 		// throw new UnsupportedOperationException();
 	}
 
-	public void function() throws Exception {
+	public FunctionDeclaration___ function() throws Exception {
+		FunctionDeclaration___ first;
+		//identifier, namedef list, result TYPE, block
+		Identifier__ IDFunc;
+		List<INameDef> listND = new LinkedList<INameDef>();
+		Type__ resultType = null;
+		Block__ bloc=null;
+		NameDef__ ND;
 		callToken();
 		if (kind == Kind.IDENTIFIER) {
+			IDFunc = new Identifier__(line, pos, text, text);
 			callToken();
 			if (kind == Kind.LPAREN) {
 				callToken();
 				if (kind == Kind.IDENTIFIER) {
+					IDGlobal = new Identifier__(line, pos, text, text);
 					callToken();
-					nameDef(IDGlobal);
+					ND = nameDef(IDGlobal);
+					listND.add(ND);
 					// should check for comma and more nameDef
 					// callToken();
 					while (kind == Kind.COMMA) // checks for multiple namedefs
 					{
 						callToken();
 						if (kind == Kind.IDENTIFIER) {
+							IDGlobal = new Identifier__(line, pos, text, text);
 							callToken();
-							nameDef(IDGlobal);
+							ND = nameDef(IDGlobal);
+							listND.add(ND);
 						} else
 							throw new SyntaxException("invalid synatx 5", line, pos);
 					}
@@ -186,7 +194,7 @@ public class Parser implements IPLPParser {
 					callToken();
 					if (kind == Kind.COLON) {
 						callToken();
-						type();
+						resultType = type();
 						// callToken();
 					}
 					if (kind == Kind.KW_DO) {
@@ -197,7 +205,7 @@ public class Parser implements IPLPParser {
 						if (kind == Kind.KW_END)
 							callToken();
 						else {
-							block();
+							bloc = block();
 							if (kind == Kind.KW_END)
 								callToken();
 							else
@@ -211,6 +219,9 @@ public class Parser implements IPLPParser {
 				throw new SyntaxException("invalid 8 syntax", line, pos);
 		} else
 			throw new SyntaxException("invalid 9 syntax", line, pos);
+		
+		first = new FunctionDeclaration___(line, pos, text, IDFunc, listND, resultType, bloc);
+		return first;
 
 	}
 
@@ -231,15 +242,23 @@ public class Parser implements IPLPParser {
 
 	public IStatement statement() throws Exception {
 		// callToken();
+		IStatement first = null;
+		
 		switch (kind) {
 		case KW_LET: {
+			
+			NameDef__ localDef;
+			IExpression Exp = null;
+			Block__ bloc = null;
+			
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
+				IDGlobal = new Identifier__(line, pos, text, text);
 				callToken();
-				nameDef(IDGlobal);
+				localDef = nameDef(IDGlobal);
 				if (kind == Kind.ASSIGN) {
 					callToken();
-					expression();
+					Exp = expression();
 				}
 				// add DO block() END
 				if (kind == Kind.KW_DO) {
@@ -248,7 +267,7 @@ public class Parser implements IPLPParser {
 					if (kind == Kind.KW_END)
 						callToken();
 					else {
-						block();
+						bloc = block();
 						if (kind == Kind.KW_END)
 							callToken();
 						else
@@ -256,6 +275,7 @@ public class Parser implements IPLPParser {
 					}
 				} else
 					throw new SyntaxException("error syntax4", line, pos);
+				
 				// ask if semi is required or to be removed????
 				if (kind == Kind.SEMI)
 					callToken();
@@ -263,8 +283,11 @@ public class Parser implements IPLPParser {
 					throw new SyntaxException("semi not found 4", line, pos);
 			} else
 				throw new SyntaxException("invalid 10 token", line, pos);
+			
+			first = new LetStatement__(line, pos, text, bloc, Exp, localDef);
 		}
 			break;
+			
 		case KW_SWITCH: {
 			callToken();
 			expression();
@@ -365,7 +388,7 @@ public class Parser implements IPLPParser {
 				throw new SyntaxException("semi not found", line, pos);
 		}
 		}
-		return null;
+		return first;
 	}
 
 	public NameDef__ nameDef(Identifier__ ID) throws Exception {
