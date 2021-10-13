@@ -5,6 +5,7 @@ import edu.ufl.cise.plpfa21.assignment1.Lexer;
 import edu.ufl.cise.plpfa21.assignment1.PLPTokenKinds.Kind;
 import edu.ufl.cise.plpfa21.assignment3.ast.Expression;
 import edu.ufl.cise.plpfa21.assignment3.ast.IASTNode;
+import edu.ufl.cise.plpfa21.assignment3.ast.IBlock;
 import edu.ufl.cise.plpfa21.assignment3.ast.IDeclaration;
 import edu.ufl.cise.plpfa21.assignment3.ast.IExpression;
 import edu.ufl.cise.plpfa21.assignment3.ast.IFunctionCallExpression;
@@ -12,6 +13,7 @@ import edu.ufl.cise.plpfa21.assignment3.ast.INameDef;
 import edu.ufl.cise.plpfa21.assignment3.ast.IStatement;
 import edu.ufl.cise.plpfa21.assignment3.ast.IType;
 import edu.ufl.cise.plpfa21.assignment3.ast.IType.TypeKind;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.AssignmentStatement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.BinaryExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Block__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.BooleanLiteralExpression__;
@@ -21,18 +23,24 @@ import edu.ufl.cise.plpfa21.assignment3.astimpl.FunctionCallExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.FunctionDeclaration___;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.IdentExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Identifier__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.IfStatement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.ImmutableGlobal__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.IntLiteralExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.LetStatement__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.ListSelectorExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.ListType__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.MutableGlobal__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.NameDef__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.NilConstantExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.PrimitiveType__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Program__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.ReturnStatement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Statement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.StringLiteralExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.SwitchStatement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Type__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.UnaryExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.WhileStatement__;
 
 import java.lang.UnsupportedOperationException;
 import java.util.LinkedList;
@@ -92,7 +100,7 @@ public class Parser implements IPLPParser {
 			first = function();
 			break;
 		case KW_VAR: {
-			NameDef__ NameDef; 
+			NameDef__ NameDef;
 			IExpression Exp = null;
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
@@ -114,11 +122,11 @@ public class Parser implements IPLPParser {
 			// nextToken() should be either a LPRAN or Assign
 			// expression();
 			// should end with semi colon;
-			first = new MutableGlobal__(line, pos, text, NameDef, Exp); 
+			first = new MutableGlobal__(line, pos, text, NameDef, Exp);
 		}
 			break;
 		case KW_VAL: {
-			NameDef__ NameDef; 
+			NameDef__ NameDef;
 			IExpression Exp;
 			// first = new FunctionDeclaration___(line,pos,text,ID,null);
 			callToken();
@@ -142,7 +150,7 @@ public class Parser implements IPLPParser {
 			// nextToken() should be Assign
 			// expression();
 			// should end with semi colon
-			first = new ImmutableGlobal__(line, pos, text, NameDef, Exp); 
+			first = new ImmutableGlobal__(line, pos, text, NameDef, Exp);
 		}
 			break;
 		default:
@@ -156,11 +164,11 @@ public class Parser implements IPLPParser {
 
 	public FunctionDeclaration___ function() throws Exception {
 		FunctionDeclaration___ first;
-		//identifier, namedef list, result TYPE, block
+		// identifier, namedef list, result TYPE, block
 		Identifier__ IDFunc;
 		List<INameDef> listND = new LinkedList<INameDef>();
 		Type__ resultType = null;
-		Block__ bloc=null;
+		Block__ bloc = null;
 		NameDef__ ND;
 		callToken();
 		if (kind == Kind.IDENTIFIER) {
@@ -219,7 +227,7 @@ public class Parser implements IPLPParser {
 				throw new SyntaxException("invalid 8 syntax", line, pos);
 		} else
 			throw new SyntaxException("invalid 9 syntax", line, pos);
-		
+
 		first = new FunctionDeclaration___(line, pos, text, IDFunc, listND, resultType, bloc);
 		return first;
 
@@ -243,14 +251,14 @@ public class Parser implements IPLPParser {
 	public IStatement statement() throws Exception {
 		// callToken();
 		IStatement first = null;
-		
+
 		switch (kind) {
 		case KW_LET: {
-			
+
 			NameDef__ localDef;
 			IExpression Exp = null;
 			Block__ bloc = null;
-			
+
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				IDGlobal = new Identifier__(line, pos, text, text);
@@ -275,7 +283,7 @@ public class Parser implements IPLPParser {
 					}
 				} else
 					throw new SyntaxException("error syntax4", line, pos);
-				
+
 				// ask if semi is required or to be removed????
 				if (kind == Kind.SEMI)
 					callToken();
@@ -283,23 +291,34 @@ public class Parser implements IPLPParser {
 					throw new SyntaxException("semi not found 4", line, pos);
 			} else
 				throw new SyntaxException("invalid 10 token", line, pos);
-			
+
 			first = new LetStatement__(line, pos, text, bloc, Exp, localDef);
 		}
 			break;
-			
+
 		case KW_SWITCH: {
+
+			IExpression switchExp, BExp = null;
+			List<IExpression> listBranchExp = new LinkedList<IExpression>();
+			Block__ bloc, defaultBloc = null;
+			List<IBlock> listBloc = new LinkedList<IBlock>();
+
 			callToken();
-			expression();
+			switchExp = expression();
 			// if(kind == Kind.KW_CASE) {
 
 			while (kind != Kind.KW_DEFAULT) {
 				callToken();
-				expression();
+				BExp = expression();
+				listBranchExp.add(BExp);
+
 				if (kind == Kind.COLON) {
 					callToken();
-					if (kind != Kind.KW_CASE)
-						block();
+					if (kind != Kind.KW_CASE) {
+						bloc = block();
+						listBloc.add(bloc);
+					}
+
 					else
 						continue;
 				} else
@@ -310,7 +329,7 @@ public class Parser implements IPLPParser {
 				if (kind == Kind.KW_END)
 					callToken();
 				else {
-					block();
+					defaultBloc = block();
 					if (kind == Kind.KW_END)
 						callToken();
 
@@ -323,18 +342,25 @@ public class Parser implements IPLPParser {
 			// }
 			// else
 			// throw new SyntaxException("error syntax 6", line, pos);
+
+			first = new SwitchStatement__(line, pos, text, switchExp, listBranchExp, listBloc, defaultBloc);
 		}
 			break;
+
 		case KW_IF: {
+
+			IExpression guardExp;
+			IBlock ifBloc = null;
+
 			callToken();
-			expression();
+			guardExp = expression();
 			if (kind == Kind.KW_DO) {
 				callToken();
 
 				if (kind == Kind.KW_END)
 					callToken();
 				else {
-					block();
+					ifBloc = block();
 					if (kind == Kind.KW_END)
 						callToken();
 					else
@@ -342,11 +368,18 @@ public class Parser implements IPLPParser {
 				}
 			} else
 				throw new SyntaxException("error syntax4", line, pos);
+
+			first = new IfStatement__(line, pos, text, guardExp, ifBloc);
 		}
 			break;
+
 		case KW_WHILE: {
+
+			IExpression guardExp;
+			IBlock whileBloc = null;
+
 			callToken();
-			expression();
+			guardExp = expression();
 			// callToken();
 			if (kind == Kind.KW_DO) {
 				callToken();
@@ -354,7 +387,7 @@ public class Parser implements IPLPParser {
 				if (kind == Kind.KW_END)
 					callToken();
 				else {
-					block();
+					whileBloc = block();
 					if (kind == Kind.KW_END)
 						callToken();
 					else
@@ -362,32 +395,49 @@ public class Parser implements IPLPParser {
 				}
 			} else
 				throw new SyntaxException("invalid 11 syntax", line, pos);
+
+			first = new WhileStatement__(line, pos, text, guardExp, whileBloc);
 		}
 			break;
+
 		case KW_RETURN: {
+
+			IExpression returnExp;
+
 			callToken();
-			expression();
+			returnExp = expression();
 			if (kind == Kind.SEMI)
 				callToken();
 			else
 				throw new SyntaxException("semi not found 3", line, pos);
+
+			first = new ReturnStatement__(line, pos, text, returnExp);
 		}
 			break;
+
 		// case IDENTIFIER:
 		default: {
-			expression();
+
+			IExpression leftExp, rightExp = null;
+
+			leftExp = expression();
 			// callToken();
 			if (kind == Kind.ASSIGN) {
 				callToken();
-				expression();
+				rightExp = expression();
 			}
 			// callToken(); //why is this being called? check.
 			if (kind == Kind.SEMI)
 				callToken();
 			else
 				throw new SyntaxException("semi not found", line, pos);
+
+			first = new AssignmentStatement__(line, pos, text, leftExp, rightExp);
 		}
+			break;
+
 		}
+
 		return first;
 	}
 
@@ -484,13 +534,18 @@ public class Parser implements IPLPParser {
 
 	public IExpression unaryExpression() throws Exception {
 		// callToken();
-		IExpression first = null;
+		IExpression first, exp = null;
+		Kind kindTemp = null;
+		
 		if (kind == Kind.BANG || kind == Kind.MINUS) {
+			kindTemp = kind;
 			callToken();
-			primaryExpression();
+			exp = primaryExpression();
 		} else {
-			first = primaryExpression();
+			exp = primaryExpression();
 		}
+		
+		first = new UnaryExpression__(line, pos, text, exp, kindTemp);
 		return first;
 	}
 
@@ -505,28 +560,33 @@ public class Parser implements IPLPParser {
 			callToken();
 		}
 			break;
+
 		case KW_TRUE: {
 			first = new BooleanLiteralExpression__(line, pos, text, true);
 			callToken();
 		}
 			break;
+
 		case KW_FALSE: {
 			first = new BooleanLiteralExpression__(line, pos, text, false);
 			callToken();
 		}
 			break;
+
 		case INT_LITERAL: {
 			callValue();
 			first = new IntLiteralExpression__(line, pos, text, value);
 			callToken();
 		}
 			break;
+
 		case STRING_LITERAL: {
 			callStringText();
 			first = new StringLiteralExpression__(line, pos, text, stringText);
 			callToken();
 		}
 			break;
+
 		case LPAREN: {// call expression() and check RPAREN
 			callToken();
 			first = expression();
@@ -537,34 +597,50 @@ public class Parser implements IPLPParser {
 				throw new SyntaxException("rpran not found", line, pos);
 		}
 			break;
+
 		case IDENTIFIER: {
+			Identifier__ IDName;
 			// if has next [ ] then call expression() and check for ] or ( expression ,
 			// expression*) OR just identifier ->
-			IDGlobal = new Identifier__(line, pos, text, text);
-			first = new IdentExpression__(line, pos, stringText, IDGlobal);
+			IDName = new Identifier__(line, pos, text, text);
+			first = new IdentExpression__(line, pos, stringText, IDName);
 			callToken();
+
 			switch (kind) {
 			case LSQUARE: {
+
+				IExpression index;
+
 				callToken();
-				first = expression();
+				index = expression();
 				// callToken();
 				if (kind == Kind.RSQUARE)
 					callToken();
 				else
 					throw new SyntaxException("rsquare not found", line, pos);
+
+				first = new ListSelectorExpression__(line, pos, text, IDName, index);
 			}
 				break;
+
 			case LPAREN: {
+
+				IExpression args;
+				List<IExpression> listArgs = new LinkedList<IExpression>();
+
 				// first = (IFunctionCallExpression) first;
 				callToken();
 				if (kind == Kind.RPAREN)
 					callToken();
 				else {
-					first = expression();
+					args = expression();
+					listArgs.add(args);
+
 					// callToken();
 					while (kind == Kind.COMMA) {
 						callToken();
-						first = expression();
+						args = expression();
+						listArgs.add(args);
 					}
 					if (kind == Kind.RPAREN)
 						callToken();
@@ -572,8 +648,11 @@ public class Parser implements IPLPParser {
 					else
 						throw new SyntaxException("rpran not found", line, pos);
 				}
+
+				first = new FunctionCallExpression__(line, pos, text, IDName, listArgs);
 			}
 				break;
+
 			default:
 				break;
 
