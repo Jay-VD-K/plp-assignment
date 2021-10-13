@@ -465,15 +465,17 @@ public class Parser implements IPLPParser {
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
+		
 		first = comparisionExpression();
 		// should not call next token always.
 		// callToken();
+		
 		while (kind == Kind.AND || kind == Kind.OR) {
 			kindTemp = kind;
 			callToken();
 			second = comparisionExpression();
-			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
-			return BinaryExp;
+			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+			//return BinaryExp;
 		}
 		return first;
 	}
@@ -483,14 +485,16 @@ public class Parser implements IPLPParser {
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
+		
 		first = additiveExpression();
 		// callToken();
+		
 		while (kind == Kind.GT || kind == Kind.LT || kind == Kind.EQUALS || kind == Kind.NOT_EQUALS) {
 			kindTemp = kind;
 			callToken();
 			second = additiveExpression();
-			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
-			return BinaryExp;
+			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+			//return BinaryExp;
 		}
 		return first;
 	}
@@ -500,6 +504,7 @@ public class Parser implements IPLPParser {
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
+		
 		first = multiplicativeExpression();
 		// callToken();
 
@@ -507,9 +512,9 @@ public class Parser implements IPLPParser {
 			kindTemp = kind;
 			callToken();
 			second = multiplicativeExpression();
-			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
 
-			return BinaryExp;
+			//return BinaryExp;
 		}
 		return first;
 
@@ -517,17 +522,21 @@ public class Parser implements IPLPParser {
 
 	public IExpression multiplicativeExpression() throws Exception {
 		// callToken();
+		
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
+		
 		first = unaryExpression();
+		
 		// callToken();
 		while (kind == Kind.TIMES || kind == Kind.DIV) {
 			kindTemp = kind;
 			callToken();
 			second = unaryExpression();
-			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
-			return BinaryExp;
+			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+			
+			//return BinaryExp;
 		}
 		return first;
 	}
@@ -536,16 +545,17 @@ public class Parser implements IPLPParser {
 		// callToken();
 		IExpression first, exp = null;
 		Kind kindTemp = null;
-		
+
 		if (kind == Kind.BANG || kind == Kind.MINUS) {
 			kindTemp = kind;
 			callToken();
 			exp = primaryExpression();
+			first = new UnaryExpression__(line, pos, text, exp, kindTemp);
 		} else {
-			exp = primaryExpression();
+			first = primaryExpression();
 		}
-		
-		first = new UnaryExpression__(line, pos, text, exp, kindTemp);
+
+		//first = new UnaryExpression__(line, pos, text, exp, kindTemp);
 		return first;
 	}
 
@@ -553,7 +563,9 @@ public class Parser implements IPLPParser {
 		// token = lexerInput.nextToken();
 		// kind = token.getKind();
 		// callToken();
-		IExpression first = null, first2 = null;
+
+		IExpression first;
+
 		switch (kind) {
 		case KW_NIL: {
 			first = new NilConstantExpression__(line, pos, text);
