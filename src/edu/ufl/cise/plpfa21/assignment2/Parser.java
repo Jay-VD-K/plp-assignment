@@ -3,11 +3,38 @@ package edu.ufl.cise.plpfa21.assignment2;
 import edu.ufl.cise.plpfa21.assignment1.IPLPToken;
 import edu.ufl.cise.plpfa21.assignment1.Lexer;
 import edu.ufl.cise.plpfa21.assignment1.PLPTokenKinds.Kind;
+import edu.ufl.cise.plpfa21.assignment3.ast.Expression;
 import edu.ufl.cise.plpfa21.assignment3.ast.IASTNode;
-import edu.ufl.cise.plpfa21.assignment3.ast.IProgram;
+import edu.ufl.cise.plpfa21.assignment3.ast.IDeclaration;
+import edu.ufl.cise.plpfa21.assignment3.ast.IExpression;
+import edu.ufl.cise.plpfa21.assignment3.ast.IFunctionCallExpression;
+import edu.ufl.cise.plpfa21.assignment3.ast.IStatement;
+import edu.ufl.cise.plpfa21.assignment3.ast.IType;
+import edu.ufl.cise.plpfa21.assignment3.ast.IType.TypeKind;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.BinaryExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.Block__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.BooleanLiteralExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.Declaration__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.Expression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.FunctionCallExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.FunctionDeclaration___;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.IdentExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.Identifier__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.ImmutableGlobal__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.IntLiteralExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.ListType__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.MutableGlobal__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.NameDef__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.NilConstantExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.PrimitiveType__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Program__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.Statement__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.StringLiteralExpression__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.Type__;
 
 import java.lang.UnsupportedOperationException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Parser implements IPLPParser {
 	public Lexer lexerInput;
@@ -18,8 +45,9 @@ public class Parser implements IPLPParser {
 
 	IPLPToken token;
 	Kind kind;
-	int line, pos;
-	String text;
+	int line, pos, value;
+	String text, stringText;
+	Identifier__ IDGlobal = null;
 
 	// calls nextToken and Kind, assigns line and position => consumes token.
 	public void callToken() throws Exception {
@@ -28,34 +56,52 @@ public class Parser implements IPLPParser {
 		line = token.getLine();
 		pos = token.getCharPositionInLine();
 		text = token.getText();
+		// value = token.getIntValue();
+	}
+
+	public void callValue() throws Exception {
+		value = token.getIntValue();
+	}
+
+	public void callStringText() {
+		stringText = token.getStringValue();
 	}
 
 	public Program__ program() throws Exception {
-		Program__ first = new Program__(line, pos, text, null);
+		List<IDeclaration> listD = new LinkedList<IDeclaration>();
+
+		Declaration__ second;
 		// first(line, pos, text, null);
 		while (kind != Kind.EOF) {
-			declaration();
+			second = declaration();
+			listD.add(second);
 		}
+		Program__ first = new Program__(line, pos, text, listD);
 		if (kind == Kind.EOF)
 			return first;
 
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
-	public void declaration() throws Exception {
+	public Declaration__ declaration() throws Exception {
+		Declaration__ first = null; // = new Declaration__(line,pos,text);
 		switch (kind) {
 		case KW_FUN:
 			function();
 			break;
 		case KW_VAR: {
+			NameDef__ NameDef; // = new NameDef__(line, pos, text, ID, null); // should have type instead of
+			// last null
+			IExpression Exp = null;
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
+				IDGlobal = new Identifier__(line, pos, text, text);
 				callToken();
-				nameDef();
+				NameDef = nameDef(IDGlobal);
 				// callToken();
 				if (kind == Kind.ASSIGN) {
 					callToken();
-					expression();
+					Exp = expression();
 					// callToken();
 				}
 				if (kind == Kind.SEMI)
@@ -67,17 +113,27 @@ public class Parser implements IPLPParser {
 			// nextToken() should be either a LPRAN or Assign
 			// expression();
 			// should end with semi colon;
+			first = new MutableGlobal__(line, pos, text, NameDef, Exp); // shuld have exp instead of last null
 		}
 			break;
 		case KW_VAL: {
+			// Identifier__ ID = new Identifier__(line, pos, text, "VAL");
+			NameDef__ NameDef; // = new NameDef__(line, pos, text, ID, null); // should have type instead of
+								// last null
+			IExpression Exp;
+			// first = new FunctionDeclaration___(line,pos,text,ID,null);
+
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
+				Identifier__ ID1 = new Identifier__(line, pos, text, text);
 				callToken();
-				nameDef();
+				NameDef = nameDef(ID1);
+				// first = new ImmutableGlobal__(line, pos, text, NameDef, null); // shuld have
+				// exp instead of last null
 				// callToken();
 				if (kind == Kind.ASSIGN) {
 					callToken();
-					expression();
+					Exp = expression();
 					// callToken();
 				} else
 					throw new SyntaxException("invalid syntax 1", line, pos);
@@ -90,12 +146,16 @@ public class Parser implements IPLPParser {
 			// nextToken() should be Assign
 			// expression();
 			// should end with semi colon
+			first = new ImmutableGlobal__(line, pos, text, NameDef, Exp); // shuld have exp instead of last null
 		}
 			break;
 		default:
 			throw new SyntaxException("invalid syntax 4", line, pos);
 
 		}
+
+		return first;
+		// throw new UnsupportedOperationException();
 	}
 
 	public void function() throws Exception {
@@ -106,7 +166,7 @@ public class Parser implements IPLPParser {
 				callToken();
 				if (kind == Kind.IDENTIFIER) {
 					callToken();
-					nameDef();
+					nameDef(IDGlobal);
 					// should check for comma and more nameDef
 					// callToken();
 					while (kind == Kind.COMMA) // checks for multiple namedefs
@@ -114,7 +174,7 @@ public class Parser implements IPLPParser {
 						callToken();
 						if (kind == Kind.IDENTIFIER) {
 							callToken();
-							nameDef();
+							nameDef(IDGlobal);
 						} else
 							throw new SyntaxException("invalid synatx 5", line, pos);
 					}
@@ -154,27 +214,49 @@ public class Parser implements IPLPParser {
 
 	}
 
-	public void block() throws Exception {
+	public Block__ block() throws Exception {
 		// callToken();
-
+		Block__ first = null;
+		List<IStatement> listStat = new LinkedList<IStatement>();
+		IStatement second;
 		while (kind != Kind.KW_DEFAULT && kind != Kind.KW_END && kind != Kind.EOF && kind != Kind.KW_CASE) {
-			statement();
+			second = statement();
+			listStat.add(second);
 		}
 		// need to check for multiple types of statement *
+		first = new Block__(line, line, stringText, listStat); // should have list of statements in the end instead fof
+																// null.
+		return first;
 	}
 
-	public void statement() throws Exception {
+	public IStatement statement() throws Exception {
 		// callToken();
 		switch (kind) {
 		case KW_LET: {
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				callToken();
-				nameDef();
+				nameDef(IDGlobal);
 				if (kind == Kind.ASSIGN) {
 					callToken();
 					expression();
 				}
+				// add DO block() END
+				if (kind == Kind.KW_DO) {
+					callToken();
+
+					if (kind == Kind.KW_END)
+						callToken();
+					else {
+						block();
+						if (kind == Kind.KW_END)
+							callToken();
+						else
+							throw new SyntaxException("error syntax3", line, pos);
+					}
+				} else
+					throw new SyntaxException("error syntax4", line, pos);
+				// ask if semi is required or to be removed????
 				if (kind == Kind.SEMI)
 					callToken();
 				else
@@ -283,93 +365,148 @@ public class Parser implements IPLPParser {
 				throw new SyntaxException("semi not found", line, pos);
 		}
 		}
+		return null;
 	}
 
-	public void nameDef() throws Exception {
+	public NameDef__ nameDef(Identifier__ ID) throws Exception {
 		// callToken();
+
+		Type__ Type = null;
 		if (kind == Kind.COLON) {
 			callToken();
-			type();
+			Type = type();
 		}
+		NameDef__ first = new NameDef__(line, pos, text, ID, Type); // ID, TYPE
+		// throw new UnsupportedOperationException();
+		return first;
 	}
 
-	public void expression() throws Exception {
-		logicalExpression();
+	public IExpression expression() throws Exception {
+		IExpression first;
+		first = logicalExpression();
+		return first;
 	}
 
-	public void logicalExpression() throws Exception {
+	public IExpression logicalExpression() throws Exception {
 		// callToken();
-		comparisionExpression();
+		IExpression first, second;
+		BinaryExpression__ BinaryExp = null;
+		Kind kindTemp;
+		first = comparisionExpression();
 		// should not call next token always.
 		// callToken();
 		while (kind == Kind.AND || kind == Kind.OR) {
+			kindTemp = kind;
 			callToken();
-			comparisionExpression();
+			second = comparisionExpression();
+			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+			return BinaryExp;
 		}
+		return first;
 	}
 
-	public void comparisionExpression() throws Exception {
+	public IExpression comparisionExpression() throws Exception {
 		// callToken();
-		additiveExpression();
+		IExpression first, second;
+		BinaryExpression__ BinaryExp = null;
+		Kind kindTemp;
+		first = additiveExpression();
 		// callToken();
 		while (kind == Kind.GT || kind == Kind.LT || kind == Kind.EQUALS || kind == Kind.NOT_EQUALS) {
+			kindTemp = kind;
 			callToken();
-			additiveExpression();
+			second = additiveExpression();
+			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+			return BinaryExp;
 		}
+		return first;
 	}
 
-	public void additiveExpression() throws Exception {
+	public IExpression additiveExpression() throws Exception {
 		// callToken();
-		multiplicativeExpression();
+		IExpression first, second;
+		BinaryExpression__ BinaryExp = null;
+		Kind kindTemp;
+		first = multiplicativeExpression();
 		// callToken();
+
 		while (kind == Kind.PLUS || kind == Kind.MINUS) {
+			kindTemp = kind;
 			callToken();
-			multiplicativeExpression();
+			second = multiplicativeExpression();
+			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+
+			return BinaryExp;
 		}
+		return first;
+
 	}
 
-	public void multiplicativeExpression() throws Exception {
+	public IExpression multiplicativeExpression() throws Exception {
 		// callToken();
-		unaryExpression();
+		IExpression first, second;
+		BinaryExpression__ BinaryExp = null;
+		Kind kindTemp;
+		first = unaryExpression();
 		// callToken();
 		while (kind == Kind.TIMES || kind == Kind.DIV) {
+			kindTemp = kind;
 			callToken();
-			unaryExpression();
+			second = unaryExpression();
+			BinaryExp = new BinaryExpression__(line, pos, text, first, second, kindTemp);
+			return BinaryExp;
 		}
+		return first;
 	}
 
-	public void unaryExpression() throws Exception {
+	public IExpression unaryExpression() throws Exception {
 		// callToken();
+		IExpression first = null;
 		if (kind == Kind.BANG || kind == Kind.MINUS) {
 			callToken();
 			primaryExpression();
-		} else
-			primaryExpression();
+		} else {
+			first = primaryExpression();
+		}
+		return first;
 	}
 
-	public void primaryExpression() throws Exception {
+	public IExpression primaryExpression() throws Exception {
 		// token = lexerInput.nextToken();
 		// kind = token.getKind();
 		// callToken();
+		IExpression first = null, first2 = null;
 		switch (kind) {
-		case KW_NIL:
+		case KW_NIL: {
+			first = new NilConstantExpression__(line, pos, text);
 			callToken();
+		}
 			break;
-		case KW_TRUE:
+		case KW_TRUE: {
+			first = new BooleanLiteralExpression__(line, pos, text, true);
 			callToken();
+		}
 			break;
-		case KW_FALSE:
+		case KW_FALSE: {
+			first = new BooleanLiteralExpression__(line, pos, text, false);
 			callToken();
+		}
 			break;
-		case INT_LITERAL:
+		case INT_LITERAL: {
+			callValue();
+			first = new IntLiteralExpression__(line, pos, text, value);
 			callToken();
+		}
 			break;
-		case STRING_LITERAL:
+		case STRING_LITERAL: {
+			callStringText();
+			first = new StringLiteralExpression__(line, pos, text, stringText);
 			callToken();
+		}
 			break;
 		case LPAREN: {// call expression() and check RPAREN
 			callToken();
-			expression();
+			first = expression();
 			// callToken();
 			if (kind == Kind.RPAREN)
 				callToken();
@@ -380,11 +517,13 @@ public class Parser implements IPLPParser {
 		case IDENTIFIER: {
 			// if has next [ ] then call expression() and check for ] or ( expression ,
 			// expression*) OR just identifier ->
+			IDGlobal = new Identifier__(line, pos, text, text);
+			first = new IdentExpression__(line, pos, stringText, IDGlobal);
 			callToken();
 			switch (kind) {
 			case LSQUARE: {
 				callToken();
-				expression();
+				first = expression();
 				// callToken();
 				if (kind == Kind.RSQUARE)
 					callToken();
@@ -393,15 +532,16 @@ public class Parser implements IPLPParser {
 			}
 				break;
 			case LPAREN: {
+				// first = (IFunctionCallExpression) first;
 				callToken();
 				if (kind == Kind.RPAREN)
 					callToken();
 				else {
-					expression();
+					first = expression();
 					// callToken();
 					while (kind == Kind.COMMA) {
 						callToken();
-						expression();
+						first = expression();
 					}
 					if (kind == Kind.RPAREN)
 						callToken();
@@ -415,6 +555,7 @@ public class Parser implements IPLPParser {
 				break;
 
 			}
+			// first = first2;
 
 		}
 			break;
@@ -422,22 +563,32 @@ public class Parser implements IPLPParser {
 			throw new SyntaxException("invalid 12 syntax", line, pos);
 		}
 		// callToken();
+		return first;
 
 	}
 
-	public void type() throws Exception {
+	public Type__ type() throws Exception {
 		// callToken();
+		Type__ first = null;
 		switch (kind) {
-		case KW_INT:
+		case KW_INT: {
+			first = new PrimitiveType__(line, pos, text, TypeKind.INT);
 			callToken();
+		}
 			break;
-		case KW_STRING:
+		case KW_STRING: {
+			first = new PrimitiveType__(line, pos, text, TypeKind.STRING);
 			callToken();
+		}
 			break;
-		case KW_BOOLEAN:
+		case KW_BOOLEAN: {
+			first = new PrimitiveType__(line, pos, text, TypeKind.BOOLEAN);
 			callToken();
+		}
 			break;
 		case KW_LIST: {
+			Type__ Type = null;
+
 			callToken();
 			if (kind == Kind.LSQUARE) {
 				callToken();
@@ -445,7 +596,7 @@ public class Parser implements IPLPParser {
 				if (kind == Kind.RSQUARE)
 					callToken();
 				else {
-					type();
+					Type = type();
 					if (kind == Kind.RSQUARE)
 						callToken();
 					else
@@ -453,11 +604,14 @@ public class Parser implements IPLPParser {
 				}
 
 			}
+			first = new ListType__(line, pos, text, Type);
 		}
 			break;
 		default:
 			throw new SyntaxException("invalid 13 syntax", line, pos);
 		}
+		return first;
+		// throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -468,12 +622,12 @@ public class Parser implements IPLPParser {
 		// IPLPLexer lexer = lexerInput.getLexer(input);
 		{
 			callToken();
-			Program__ first ;
+			Program__ first;
 			// System.out.println("new token " + token + "token kind" + kind);
 			first = program();
 			if (kind == Kind.EOF)
 				return first;
-				//return (IASTNode) new UnsupportedOperationException();
+			// throw new UnsupportedOperationException();
 			else
 				throw new SyntaxException("invalid 15 syntax", line, pos);
 			/// for second token
