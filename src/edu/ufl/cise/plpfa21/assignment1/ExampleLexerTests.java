@@ -1417,7 +1417,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 		String input = """
 				FUN func() DO
 
-				END
+					END
 				""";
 		IPLPLexer lexer = getLexer(input);
 		{
@@ -1456,4 +1456,134 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(kind, Kind.EOF);
 		}
 	}
+	
+	@Test
+	public void test38() throws LexicalException {
+		String input = """
+				FUN func() DO
+				SWITCH x
+				CASE 0 : y=0;
+				DEFAULT y=3;
+				END
+				/*SWITCH*/
+				END
+				/*FUN*/
+				""";
+		IPLPLexer lexer = getLexer(input);
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_FUN);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.IDENTIFIER);
+
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.LPAREN);
+			
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.RPAREN);
+			
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_DO);
+			
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_SWITCH);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.IDENTIFIER);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_CASE);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.INT_LITERAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.COLON);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.IDENTIFIER);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.ASSIGN);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.INT_LITERAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.SEMI);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_DEFAULT);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.IDENTIFIER);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.ASSIGN);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.INT_LITERAL);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.SEMI);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_END);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.KW_END);
+		}
+		{
+			IPLPToken token = lexer.nextToken();
+			Kind kind = token.getKind();
+			assertEquals(kind, Kind.EOF);
+		}
+	}
+
 }

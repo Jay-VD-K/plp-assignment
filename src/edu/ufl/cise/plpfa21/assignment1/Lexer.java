@@ -217,6 +217,12 @@ public class Lexer implements IPLPLexer {
 							line++;
 							// flag = 1;
 						}
+						if (input.charAt(0) == '\n' && input.length() == 1) {
+							s += input.charAt(0);
+							pos = 0;
+							line++;
+							return new Tokens(s, parentInput, startPos, startLine);
+						}
 						if (input.charAt(i) != ' ') {
 							i = i - 1;
 						}
