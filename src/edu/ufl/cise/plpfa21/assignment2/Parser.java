@@ -3,22 +3,18 @@ package edu.ufl.cise.plpfa21.assignment2;
 import edu.ufl.cise.plpfa21.assignment1.IPLPToken;
 import edu.ufl.cise.plpfa21.assignment1.Lexer;
 import edu.ufl.cise.plpfa21.assignment1.PLPTokenKinds.Kind;
-import edu.ufl.cise.plpfa21.assignment3.ast.Expression;
 import edu.ufl.cise.plpfa21.assignment3.ast.IASTNode;
 import edu.ufl.cise.plpfa21.assignment3.ast.IBlock;
 import edu.ufl.cise.plpfa21.assignment3.ast.IDeclaration;
 import edu.ufl.cise.plpfa21.assignment3.ast.IExpression;
-import edu.ufl.cise.plpfa21.assignment3.ast.IFunctionCallExpression;
 import edu.ufl.cise.plpfa21.assignment3.ast.INameDef;
 import edu.ufl.cise.plpfa21.assignment3.ast.IStatement;
-import edu.ufl.cise.plpfa21.assignment3.ast.IType;
 import edu.ufl.cise.plpfa21.assignment3.ast.IType.TypeKind;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.AssignmentStatement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.BinaryExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Block__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.BooleanLiteralExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Declaration__;
-import edu.ufl.cise.plpfa21.assignment3.astimpl.Expression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.FunctionCallExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.FunctionDeclaration___;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.IdentExpression__;
@@ -35,7 +31,6 @@ import edu.ufl.cise.plpfa21.assignment3.astimpl.NilConstantExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.PrimitiveType__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Program__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.ReturnStatement__;
-import edu.ufl.cise.plpfa21.assignment3.astimpl.Statement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.StringLiteralExpression__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.SwitchStatement__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Type__;
@@ -102,6 +97,7 @@ public class Parser implements IPLPParser {
 		case KW_VAR: {
 			NameDef__ NameDef;
 			IExpression Exp = null;
+
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				IDGlobal = new Identifier__(line, pos, text, text);
@@ -128,7 +124,7 @@ public class Parser implements IPLPParser {
 		case KW_VAL: {
 			NameDef__ NameDef;
 			IExpression Exp;
-			// first = new FunctionDeclaration___(line,pos,text,ID,null);
+
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				Identifier__ ID1 = new Identifier__(line, pos, text, text);
@@ -170,6 +166,7 @@ public class Parser implements IPLPParser {
 		Type__ resultType = null;
 		Block__ bloc = null;
 		NameDef__ ND;
+
 		callToken();
 		if (kind == Kind.IDENTIFIER) {
 			IDFunc = new Identifier__(line, pos, text, text);
@@ -243,8 +240,7 @@ public class Parser implements IPLPParser {
 			listStat.add(second);
 		}
 		// need to check for multiple types of statement *
-		first = new Block__(line, line, stringText, listStat); // should have list of statements in the end instead fof
-																// null.
+		first = new Block__(line, line, stringText, listStat);
 		return first;
 	}
 
@@ -443,12 +439,12 @@ public class Parser implements IPLPParser {
 
 	public NameDef__ nameDef(Identifier__ ID) throws Exception {
 		// callToken();
-
 		Type__ Type = null;
 		if (kind == Kind.COLON) {
 			callToken();
 			Type = type();
 		}
+
 		NameDef__ first = new NameDef__(line, pos, text, ID, Type); // ID, TYPE
 		// throw new UnsupportedOperationException();
 		return first;
@@ -465,17 +461,16 @@ public class Parser implements IPLPParser {
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
-		
+
 		first = comparisionExpression();
 		// should not call next token always.
 		// callToken();
-		
+
 		while (kind == Kind.AND || kind == Kind.OR) {
 			kindTemp = kind;
 			callToken();
 			second = comparisionExpression();
 			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
-			//return BinaryExp;
 		}
 		return first;
 	}
@@ -485,16 +480,15 @@ public class Parser implements IPLPParser {
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
-		
+
 		first = additiveExpression();
 		// callToken();
-		
+
 		while (kind == Kind.GT || kind == Kind.LT || kind == Kind.EQUALS || kind == Kind.NOT_EQUALS) {
 			kindTemp = kind;
 			callToken();
 			second = additiveExpression();
 			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
-			//return BinaryExp;
 		}
 		return first;
 	}
@@ -504,7 +498,7 @@ public class Parser implements IPLPParser {
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
-		
+
 		first = multiplicativeExpression();
 		// callToken();
 
@@ -513,8 +507,6 @@ public class Parser implements IPLPParser {
 			callToken();
 			second = multiplicativeExpression();
 			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
-
-			//return BinaryExp;
 		}
 		return first;
 
@@ -522,21 +514,19 @@ public class Parser implements IPLPParser {
 
 	public IExpression multiplicativeExpression() throws Exception {
 		// callToken();
-		
+
 		IExpression first, second;
 		BinaryExpression__ BinaryExp = null;
 		Kind kindTemp;
-		
+
 		first = unaryExpression();
-		
+
 		// callToken();
 		while (kind == Kind.TIMES || kind == Kind.DIV) {
 			kindTemp = kind;
 			callToken();
 			second = unaryExpression();
 			first = new BinaryExpression__(line, pos, text, first, second, kindTemp);
-			
-			//return BinaryExp;
 		}
 		return first;
 	}
@@ -551,19 +541,13 @@ public class Parser implements IPLPParser {
 			callToken();
 			exp = primaryExpression();
 			first = new UnaryExpression__(line, pos, text, exp, kindTemp);
-		} else {
+		} else
 			first = primaryExpression();
-		}
 
-		//first = new UnaryExpression__(line, pos, text, exp, kindTemp);
 		return first;
 	}
 
 	public IExpression primaryExpression() throws Exception {
-		// token = lexerInput.nextToken();
-		// kind = token.getKind();
-		// callToken();
-
 		IExpression first;
 
 		switch (kind) {
@@ -669,8 +653,6 @@ public class Parser implements IPLPParser {
 				break;
 
 			}
-			// first = first2;
-
 		}
 			break;
 		default:
@@ -678,7 +660,6 @@ public class Parser implements IPLPParser {
 		}
 		// callToken();
 		return first;
-
 	}
 
 	public Type__ type() throws Exception {
