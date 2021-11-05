@@ -207,15 +207,15 @@ public class Parser implements IPLPParser {
 
 						// token = lexerInput.nextToken();
 						// kind = token.getKind();
-						if (kind == Kind.KW_END)
-							callToken();
-						else {
+//						if (kind == Kind.KW_END)
+//							callToken();
+//						else {
 							bloc = block();
 							if (kind == Kind.KW_END)
 								callToken();
 							else
 								throw new SyntaxException("end not found", line, pos);
-						}
+//						}
 					} else
 						throw new SyntaxException("invalid syntax 6", line, pos);
 				} else
@@ -268,15 +268,15 @@ public class Parser implements IPLPParser {
 				if (kind == Kind.KW_DO) {
 					callToken();
 
-					if (kind == Kind.KW_END)
-						callToken();
-					else {
+//					if (kind == Kind.KW_END)
+//						callToken();
+//					else {
 						bloc = block();
 						if (kind == Kind.KW_END)
 							callToken();
 						else
 							throw new SyntaxException("error syntax3", line, pos);
-					}
+					//}
 				} else
 					throw new SyntaxException("error syntax4", line, pos);
 
@@ -318,16 +318,16 @@ public class Parser implements IPLPParser {
 			}
 			if (kind == Kind.KW_DEFAULT) {
 				callToken();
-				if (kind == Kind.KW_END)
-					callToken();
-				else {
+//				if (kind == Kind.KW_END)
+//					callToken();
+//				else {
 					defaultBloc = block();
 					if (kind == Kind.KW_END)
 						callToken();
 
 					else
 						throw new SyntaxException("end  not found 3", line, pos);
-				}
+				//}
 			} else
 				throw new SyntaxException("error syntax 2", line, pos);
 
@@ -349,15 +349,15 @@ public class Parser implements IPLPParser {
 			if (kind == Kind.KW_DO) {
 				callToken();
 
-				if (kind == Kind.KW_END)
-					callToken();
-				else {
+//				if (kind == Kind.KW_END)
+//					callToken();
+//				else {
 					ifBloc = block();
 					if (kind == Kind.KW_END)
 						callToken();
 					else
 						throw new SyntaxException("error syntax3", line, pos);
-				}
+				//}
 			} else
 				throw new SyntaxException("error syntax4", line, pos);
 
@@ -376,15 +376,15 @@ public class Parser implements IPLPParser {
 			if (kind == Kind.KW_DO) {
 				callToken();
 
-				if (kind == Kind.KW_END)
-					callToken();
-				else {
+//				if (kind == Kind.KW_END)
+//					callToken();
+//				else {
 					whileBloc = block();
 					if (kind == Kind.KW_END)
 						callToken();
 					else
 						throw new SyntaxException("end not found 4", line, pos);
-				}
+//				}
 			} else
 				throw new SyntaxException("invalid 11 syntax", line, pos);
 
@@ -717,6 +717,7 @@ public class Parser implements IPLPParser {
 			Program__ first;
 			// System.out.println("new token " + token + "token kind" + kind);
 			first = program();
+			System.out.println("aST=---------- "+ first);
 			if (kind == Kind.EOF)
 				return first;
 			// throw new UnsupportedOperationException();

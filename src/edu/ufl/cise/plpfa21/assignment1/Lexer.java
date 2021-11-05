@@ -389,13 +389,18 @@ public class Lexer implements IPLPLexer {
 						throw new LexicalException("invalid token", startLine, startPos);
 				}
 
-				if (flag == 1) {
+				if(flag == 1)
 					break;
-				}
 			}
+			if (s == "") {
+				flag =0;
+				return nextToken();
+			}
+			else 
 			return new Tokens(s, parentInput, startPos, startLine);
 		} catch (Exception e) {
 			throw new LexicalException("invalid token", startLine, startPos);
 		}
+		//return null;
 	}
 }
