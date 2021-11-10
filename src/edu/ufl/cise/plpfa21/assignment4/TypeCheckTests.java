@@ -282,10 +282,8 @@ class TypeCheckTests {
 	@Test
 	public void test15(TestInfo testInfo) throws Exception {
 		String input = """
-				FUN a(x:INT, y:BOOLEAN, s:STRING):STRING
+				FUN a():STRING
 				DO RETURN "hello"; END
-				VAR c:STRING = a(2, TRUE, "hello");
-
 				""";
 		parseAndCheckTypes(input);
 	}
@@ -659,7 +657,7 @@ class TypeCheckTests {
 				VAL  a: INT = 2;
 				VAL  b: INT = 3;
 				VAR  c: BOOLEAN = a<b;
-				VAR  e:  BOOLEAN= c == d; /* d not declared */
+				VAR  e:  BOOLEAN= c == d;
 
 				""";
 		parseAndCheckTypesWithTypeError(input);
@@ -910,4 +908,301 @@ class TypeCheckTests {
 		parseAndCheckTypesWithTypeError(input);
 	}
 
+	// self tests
+	@DisplayName("test53")
+	@Test
+	public void test53(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				SWITCH !x
+				DEFAULT LET abc=a[1234] DO END
+				END
+				a();
+				END
+				""";
+		// x is not declared
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test54")
+	@Test
+	public void test54(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				LET x:INT = 1 DO END
+				SWITCH !x
+				DEFAULT LET abc=a[1234] DO END
+				END
+				a();
+				END
+				""";
+		// default unary exp --> !x not allowed? --only boolean arg allowed
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test55")
+	@Test
+	public void test55(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				LET x:INT = 1 DO END
+				SWITCH x
+				DEFAULT LET abc:INT=1 DO END
+				END
+				a();
+				END
+				""";
+		// a fn uundefined
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test56")
+	@Test
+	public void test56(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				SWITCH y
+				CASE TRUE:
+				CASE FALSE:
+				DEFAULT
+				END
+				/*a();*/
+				END
+				""";
+		// switch y -< y is boolean cases should also be boolean
+		parseAndCheckTypes(input);
+	}
+
+	@DisplayName("test57")
+	@Test
+	public void test57(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				SWITCH y
+				CASE 1:
+				CASE 2:
+				DEFAULT
+				END
+				/*a();*/
+				END
+				""";
+		// switch y -< y is boolean cases should also be boolean
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test58")
+	@Test
+	public void test58(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				SWITCH x
+				DEFAULT
+				END
+				/*a();*/
+				END
+				""";
+		// switch y -< y is boolean cases should also be boolean
+		parseAndCheckTypes(input);
+	}
+
+	@DisplayName("test59")
+	@Test
+	public void test59(TestInfo testInfo) throws Exception {
+		String input = """
+					VAL  a: INT = 2+4;
+				VAL  b: INT = a-1;
+				VAL  k: BOOLEAN = 2<4;
+				VAL  c: BOOLEAN = a<b;
+				VAL  d: BOOLEAN = a>b;
+				VAL  e:  BOOLEAN= c == d;
+				VAL  f:  BOOLEAN= e != d;
+				VAL  g:  BOOLEAN = !f != d;
+				VAL  h:  BOOLEAN  = !(f == d);
+				VAL  i:  BOOLEAN = g && h;
+				VAL  j:  BOOLEAN = g || h;
+				VAL l: LIST [INT] = NIL;
+				   VAL m: INT = l[3+l[2]];
+				VAL n: LIST [LIST [ INT] ] = NIL;
+				                  VAL o: LIST [INT] = n[0];
+				""";
+		// all VAL
+		parseAndCheckTypes(input);
+	}
+
+	@DisplayName("test60")
+	@Test
+	public void test60(TestInfo testInfo) throws Exception {
+		String input = """
+					VAL  a: INT = 2+4;
+				VAL  b: INT = a-1;
+				VAL  k: BOOLEAN = 2<4;
+				VAL  c: BOOLEAN = a<b;
+				VAL  d: BOOLEAN = a>b;
+				VAL  e:  BOOLEAN= c == d;
+				VAL  f:  BOOLEAN= e != d;
+				VAL  g:  BOOLEAN = !f != d;
+				VAL  h:  BOOLEAN  = !(f == d);
+				VAL  i:  BOOLEAN = g && h;
+				VAL  j:  BOOLEAN = g || h;
+				VAL l: LIST [INT] = NIL;
+				   VAL m: INT = l[3+l[2]];
+				VAL n: LIST [LIST [ INT] ] = NIL;
+				                  VAL o: LIST [INT] = n[0];
+				""";
+		// all VAL //same as 59 - duplicate
+		parseAndCheckTypes(input);
+	}
+
+	//
+	@DisplayName("test61")
+	@Test
+	public void test61(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				SWITCH x
+				DEFAULT
+				END
+				/*a();*/
+				RETURN x;
+				END
+				""";
+		// Return type mot correct
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test62")
+	@Test
+	public void test62(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func():STRING DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				RETURN x;
+				END
+				""";
+		// Return type not correct
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test63")
+	@Test
+	public void test63(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func():INT DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				RETURN x;
+				END
+				""";
+		parseAndCheckTypes(input);
+	}
+
+	@DisplayName("test64")
+	@Test
+	public void test64(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func():INT DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				RETURN x;
+				END
+				""";
+		// Return type correct
+		parseAndCheckTypes(input);
+	}
+
+	// if
+	@DisplayName("test65")
+	@Test
+	public void test65(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR y:INT;
+				VAR a:INT;
+				FUN func():INT DO
+				IF y DO a = x; END
+				IF !y DO a = 0; END
+				RETURN x;
+				END
+				""";
+		// guard exp not boolean
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test66")
+	@Test
+	public void test66(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR y:INT;
+				VAR a:INT;
+				FUN func():INT DO
+				IF TRUE
+				DO a = x;
+				LET x:INT = 1 DO END
+				END
+				IF !y DO a = 0; END
+				RETURN x;
+				END
+				""";
+		// x not declared
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test67")
+	@Test
+	public void test67(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR y:INT;
+				VAR a:INT;
+				FUN func():INT DO
+				IF TRUE
+				DO
+				LET x:INT = 1 DO END
+				a = x;
+				END
+				IF FALSE DO a = 0; END
+				RETURN x;
+				END
+				""";
+		parseAndCheckTypes(input);
+	}
+
+	@DisplayName("test68")
+	@Test
+	public void test68(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR a: LIST[INT];
+					VAR b: LIST[INT];
+					VAR c = a-b;
+
+					""";
+		// list minus
+		parseAndCheckTypesWithTypeError(input);
+	}
+
+	@DisplayName("test69")
+	@Test
+	public void test69(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN func() DO
+				LET x:INT = 1 DO END
+				LET y:BOOLEAN DO END
+				SWITCH y
+				CASE TRUE:  x="String";
+				CASE FALSE:
+				DEFAULT
+				END
+				/*a();*/
+				END
+				""";
+		// block check inside case when only single block is there.
+		parseAndCheckTypesWithTypeError(input);
+	}
 }
