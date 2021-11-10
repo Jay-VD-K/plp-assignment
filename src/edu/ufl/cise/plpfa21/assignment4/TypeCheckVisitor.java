@@ -2,8 +2,6 @@ package edu.ufl.cise.plpfa21.assignment4;
 
 import java.util.List;
 
-import com.sun.jdi.Value;
-
 import edu.ufl.cise.plpfa21.assignment1.PLPTokenKinds.Kind;
 import edu.ufl.cise.plpfa21.assignment3.ast.ASTVisitor;
 import edu.ufl.cise.plpfa21.assignment3.ast.IASTNode;
@@ -62,35 +60,35 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitIBinaryExpression(IBinaryExpression n, Object arg) throws Exception {
-		//TODO
+		// TODO
 		IExpression eLeft = n.getLeft();
 		IType eType = (IType) eLeft.visit(this, arg);
 		IExpression eRight = n.getRight();
 		IType eTypeRight = (IType) eRight.visit(this, arg);
-		
 		Kind op = n.getOp();
-		if ((op == Kind.EQUALS || op == Kind.NOT_EQUALS || op == Kind.GT || op == Kind.LT) && compatibleAssignmentTypes(eType, eTypeRight)) {
+		if ((op == Kind.EQUALS || op == Kind.NOT_EQUALS || op == Kind.GT || op == Kind.LT)
+				&& compatibleAssignmentTypes(eType, eTypeRight)) {
 			n.setType(PrimitiveType__.booleanType);
-		}
-		else if (op == Kind.PLUS) {
-			if( eType.isInt() && compatibleAssignmentTypes(eType, eTypeRight)) {
+		} else if (op == Kind.PLUS) {
+			if (eType.isInt() && compatibleAssignmentTypes(eType, eTypeRight)) {
 				n.setType(PrimitiveType__.intType);
-			}
-			else if (eType.isString() && compatibleAssignmentTypes(eType, eTypeRight)  ) {
+
+			} else if (eType.isString() && compatibleAssignmentTypes(eType, eTypeRight)) {
 				n.setType(PrimitiveType__.stringType);
-			}
-			else if (eType.isList() && compatibleAssignmentTypes(eType, eTypeRight) ) {
+
+			} else if (eType.isList() && compatibleAssignmentTypes(eType, eTypeRight)) {
 				n.setType(eType);
+				// tail type or element type?
+			} else {
+				check(false, n, "Illegal operator or expression type in binary addition expression");
 			}
-		}
-		else if ((op == Kind.MINUS || op == Kind.TIMES || op == Kind.DIV) && (eType.isInt() && compatibleAssignmentTypes(eType, eTypeRight))) {
+		} else if ((op == Kind.MINUS || op == Kind.TIMES || op == Kind.DIV)
+				&& (eType.isInt() && compatibleAssignmentTypes(eType, eTypeRight))) {
 			n.setType(PrimitiveType__.intType);
-		}
-		else if ((op == Kind.AND || op == Kind.OR ) && (eType.isBoolean() && compatibleAssignmentTypes(eType, eTypeRight))) {
+		} else if ((op == Kind.AND || op == Kind.OR)
+				&& (eType.isBoolean() && compatibleAssignmentTypes(eType, eTypeRight))) {
 			n.setType(PrimitiveType__.booleanType);
-		}
-		else {
-			// not a legal case
+		} else {
 			check(false, n, "Illegal operator or expression type in binary expression");
 		}
 		return n.getType();
@@ -110,7 +108,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitIBooleanLiteralExpression(IBooleanLiteralExpression n, Object arg) throws Exception {
-		//TODO
+		// TODO
 		IType type = PrimitiveType__.booleanType;
 		n.setType(type);
 		return type;
@@ -170,7 +168,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
 	@Override
 	public Object visitIIfStatement(IIfStatement n, Object arg) throws Exception {
-		//TODO
+		// TODO
 		IExpression guard = n.getGuardExpression();
 		IType guardType = (IType) guard.visit(this, arg);
 		check(guardType.isBoolean(), n, "Guard expression type not boolean");
@@ -202,18 +200,21 @@ public class TypeCheckVisitor implements ASTVisitor {
 	 */
 	@Override
 	public Object visitILetStatement(ILetStatement n, Object arg) throws Exception {
-		//TODO
+		// TODO
 		IExpression expression = n.getExpression();
 		IType expressionType = expression != null ? (IType) expression.visit(this, arg) : Type__.undefinedType;
-		INameDef def = n.getLocalDef();
+
 		symtab.enterScope();
+		INameDef def = n.getLocalDef();
 		IType declaredType = (IType) def.visit(this, n);
 		IType inferredType = unifyAndCheck(declaredType, expressionType, n);
 		def.setType(inferredType);
+
 		IBlock block = n.getBlock();
-		block.visit(this, arg); //check if arg or n. how to determine?
-		symtab.leaveScope();		
-		return null; // check if to return arg or null. how to determine?
+		block.visit(this, arg); // check if block inside scope or outside / difference in or out of scope?
+		symtab.leaveScope();
+
+		return arg;
 	}
 
 	@Override
@@ -296,18 +297,18 @@ public class TypeCheckVisitor implements ASTVisitor {
 	 */
 	@Override
 	public Object visitIReturnStatement(IReturnStatement n, Object arg) throws Exception {
-		//TODO
+		// TODO
 		IExpression rExpression = n.getExpression();
 		IType rightType = (IType) rExpression.visit(this, arg);
-		
-		//IIdentifier name = n.();
-		//IDeclaration dec = (IDeclaration) rExpression.visit(this, null);
-		//check(dec instanceof IFunctionDeclaration, n, rExpression.() + " is not declared or is not a function");
+
+		// IIdentifier name = n.();
+		// IDeclaration dec = (IDeclaration) rExpression.visit(this, null);
+		// check(dec instanceof IFunctionDeclaration, n, rExpression.() + " is not
+		// declared or is not a function");
 		IFunctionDeclaration fdec = (IFunctionDeclaration) arg;
-		
-		//IFunctionDeclaration fdec = (IFunctionDeclaration) n;
+		// IFunctionDeclaration fdec = (IFunctionDeclaration) n;
 		IType resultType = (IType) fdec.getResultType();
-		check(compatibleAssignmentTypes(resultType, rightType), n, "incompatible types in assignment statement");
+		check(compatibleAssignmentTypes(resultType, rightType), n, "incompatible types in return statement");
 		return arg;
 	}
 
@@ -333,7 +334,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		if (expression instanceof IIdentExpression e) {
 			String name = ((IIdentExpression) expression).getName().getName();
 			IDeclaration dec = symtab.lookupDec(name);
-			return ! isMutable(dec);
+			return !isMutable(dec);
 		} else
 			return (expression instanceof IBooleanLiteralExpression) || (expression instanceof IIntLiteralExpression)
 					|| (expression instanceof IStringLiteralExpression)
@@ -345,31 +346,37 @@ public class TypeCheckVisitor implements ASTVisitor {
 	 */
 	@Override
 	public Object visitISwitchStatement(ISwitchStatement n, Object arg) throws Exception {
-		//TODO
+		// TODO
 		IExpression guard = n.getSwitchExpression();
 		IType guardType = (IType) guard.visit(this, arg);
-		//can be boolean or int or string
-		if( !guardType.isBoolean() && !guardType.isInt() && !guardType.isString())
+		// can be boolean or int or string
+		if (!guardType.isBoolean() && !guardType.isInt() && !guardType.isString())
 			check(guardType.isBoolean(), n, "Switch expression type not boolean or int or string");
+		// put if and check for true cases also
+		if (guardType.isBoolean() || guardType.isInt() || guardType.isString()) {
+			// check for cases
+			List<IExpression> branchExp = n.getBranchExpressions();
+			List<IBlock> caseBlock = n.getBlocks();
 
-		//check for cases
-		List<IExpression> branchExp = n.getBranchExpressions();
-		List<IBlock> caseBlock = n.getBlocks();
-		
-		for (IExpression branchE : branchExp) {
-		//for(int i=0; i < branchExp.size(); i++){
-			IType rightType = (IType) branchE.visit(this, arg);
-			check(compatibleAssignmentTypes(rightType, guardType), n, "incompatible types in Switch case");
-			check(isConstantExpression(branchE), n, "branch expression is not constant");
-			//IBlock cblock = caseBlock.size() != 0 ? (IBlock) caseBlock.get(i).visit(this,arg) : null;
+			for (IExpression branchE : branchExp) {
+				int i = 0;
+				// for (int i = 0; i < branchExp.size(); i++) {
+				IType rightType = (IType) branchE.visit(this, arg);
+				check(compatibleAssignmentTypes(rightType, guardType), branchE, "incompatible types in Switch case");
+				check(isConstantExpression(branchE), branchE, "branch expression is not constant");
+				IBlock cblock = caseBlock.size() != 0 ? (IBlock) caseBlock.get(i++).visit(this, arg) : null;
+//				IBlock cblock = caseBlock.get(i);
+//				cblock.visit(this, arg);
+
+			}
+//		for (IBlock cBlock : caseBlock) {
+//			cBlock.visit(this, arg); // check block is correctly typed
+//		}
+
+			// check for default block
+			IBlock dblock = n.getDefaultBlock();
+			dblock.visit(this, arg);
 		}
-		for (IBlock cBlock : caseBlock) {
-			cBlock.visit(this, arg);
-		}
-		
-		//check for default block
-		IBlock dblock = n.getDefaultBlock();
-		dblock.visit(this, arg);
 		return arg;
 	}
 
@@ -441,7 +448,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 			check(expressionType.isList(), expressionType, "incompatible expression type");
 			IListType d = (IListType) declaredType;
 			IType e = expressionType;
-			while (! d.getElementType().equals(Type__.undefinedType)) {
+			while (!d.getElementType().equals(Type__.undefinedType)) {
 				d = (IListType) d.getElementType();
 				check(e.isList(), expressionType, "incompatible expression type");
 				e = ((IListType) e).getElementType();
