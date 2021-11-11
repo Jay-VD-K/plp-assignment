@@ -17,6 +17,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 	public void test0() throws LexicalException {
 		String input = """
 
+
 				""";
 		IPLPLexer lexer = getLexer(input);
 		{
@@ -30,8 +31,12 @@ class ExampleLexerTests implements PLPTokenKinds {
 	public void test1() throws LexicalException {
 		String input = """
 				abc
+
 				  def
+
 				     ghi
+
+
 
 				""";
 		IPLPLexer lexer = getLexer(input);
@@ -51,7 +56,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			Kind kind = token.getKind();
 			assertEquals(kind, Kind.IDENTIFIER);
 			int line = token.getLine();
-			assertEquals(line, 2);
+			assertEquals(line, 3);
 			int charPositionInLine = token.getCharPositionInLine();
 			assertEquals(charPositionInLine, 2);
 			String text = token.getText();
@@ -62,7 +67,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			Kind kind = token.getKind();
 			assertEquals(kind, Kind.IDENTIFIER);
 			int line = token.getLine();
-			assertEquals(line, 3);
+			assertEquals(line, 5);
 			int charPositionInLine = token.getCharPositionInLine();
 			assertEquals(charPositionInLine, 5);
 			String text = token.getText();
@@ -690,6 +695,8 @@ class ExampleLexerTests implements PLPTokenKinds {
 	public void test19() throws LexicalException {
 		String input = """
 				/* comment */ "abc\n b"
+
+
 				""";
 		IPLPLexer lexer = getLexer(input);
 		{
@@ -1456,7 +1463,7 @@ class ExampleLexerTests implements PLPTokenKinds {
 			assertEquals(kind, Kind.EOF);
 		}
 	}
-	
+
 	@Test
 	public void test38() throws LexicalException {
 		String input = """
@@ -1485,19 +1492,19 @@ class ExampleLexerTests implements PLPTokenKinds {
 			IPLPToken token = lexer.nextToken();
 			Kind kind = token.getKind();
 			assertEquals(kind, Kind.LPAREN);
-			
+
 		}
 		{
 			IPLPToken token = lexer.nextToken();
 			Kind kind = token.getKind();
 			assertEquals(kind, Kind.RPAREN);
-			
+
 		}
 		{
 			IPLPToken token = lexer.nextToken();
 			Kind kind = token.getKind();
 			assertEquals(kind, Kind.KW_DO);
-			
+
 		}
 		{
 			IPLPToken token = lexer.nextToken();

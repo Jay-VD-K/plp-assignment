@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import edu.ufl.cise.plpfa21.assignment1.CompilerComponentFactory;
 
@@ -362,9 +363,9 @@ class ExampleParserTests {
 				FALSE));
 				CASE NIL: LET a=
 				"abc"
-				DO 
+				DO
 				END
-				
+
 				DEFAULT LET abc=a[1234] DO END
 				END
 				/*should ignore this */
@@ -406,13 +407,13 @@ class ExampleParserTests {
 	@Test
 	public void test34() {
 		String input = """
-				FUN func() DO
-						LET a = 2		DO END
+				FUN func(a,b) DO
 				END
 				""";
 		noErrorParse(input);
+		System.out.println("aST=----------34 ");
 	}
-	
+
 	@Test
 	public void test35() {
 		String input = """
@@ -426,4 +427,43 @@ class ExampleParserTests {
 		noErrorParse(input);
 	}
 
+	@Test
+	public void test52() throws Exception {
+		String input = """
+				VAL a = 1;
+				VAR b = 2;
+				VAR x: INT;
+				FUN f(x:INT)
+				DO
+				SWITCH x
+				CASE 0 : abc;
+				CASE a :
+				CASE b : abcd;
+				DEFAULT
+				END
+
+				END
+
+				""";
+		noErrorParse(input);
+		// syntaxErrorParse(input, 2, 12);
+	}
+	
+	@Test
+	public void test53() throws Exception {
+		String input = """
+				FUN f()
+				DO
+				SWITCH x
+				CASE 0 :
+				CASE a :
+				DEFAULT
+				END
+
+				END
+
+				""";
+		noErrorParse(input);
+		// syntaxErrorParse(input, 2, 12);
+	}
 }
