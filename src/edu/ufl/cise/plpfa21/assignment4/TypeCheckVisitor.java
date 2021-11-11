@@ -300,13 +300,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		// TODO
 		IExpression rExpression = n.getExpression();
 		IType rightType = (IType) rExpression.visit(this, arg);
-
-		// IIdentifier name = n.();
-		// IDeclaration dec = (IDeclaration) rExpression.visit(this, null);
-		// check(dec instanceof IFunctionDeclaration, n, rExpression.() + " is not
-		// declared or is not a function");
 		IFunctionDeclaration fdec = (IFunctionDeclaration) arg;
-		// IFunctionDeclaration fdec = (IFunctionDeclaration) n;
 		IType resultType = (IType) fdec.getResultType();
 		check(compatibleAssignmentTypes(resultType, rightType), n, "incompatible types in return statement");
 		return arg;
@@ -364,14 +358,14 @@ public class TypeCheckVisitor implements ASTVisitor {
 				IType rightType = (IType) branchE.visit(this, arg);
 				check(compatibleAssignmentTypes(rightType, guardType), branchE, "incompatible types in Switch case");
 				check(isConstantExpression(branchE), branchE, "branch expression is not constant");
-				IBlock cblock = caseBlock.size() != 0 ? (IBlock) caseBlock.get(i++).visit(this, arg) : null;
+//				IBlock cblock = caseBlock.size() != 0 ? (IBlock) caseBlock.get(i++).visit(this, arg) : null;
 //				IBlock cblock = caseBlock.get(i);
 //				cblock.visit(this, arg);
 
 			}
-//		for (IBlock cBlock : caseBlock) {
-//			cBlock.visit(this, arg); // check block is correctly typed
-//		}
+		for (IBlock cBlock : caseBlock) {
+			cBlock.visit(this, arg); // check block is correctly typed
+		}
 
 			// check for default block
 			IBlock dblock = n.getDefaultBlock();
