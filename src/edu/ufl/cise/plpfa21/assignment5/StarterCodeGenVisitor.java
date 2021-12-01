@@ -97,20 +97,33 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 	@Override
 	public Object visitIBinaryExpression(IBinaryExpression n, Object arg) throws Exception {
 		// get method visitor from arg
-				MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv();
-				// generate code to leave value of expression on top of stack
-				//n.getExpression().visit(this, arg);
-				n.getLeft().visit(this, arg);
-				n.getRight().visit(this, arg);
-				// get the operator and types of operand and result
-				Kind op = n.getOp();
-				IType resultType = n.getType();
-				IType operandTypeL = n.getLeft().getType();
-				IType operandTypeR = n.getRight().getType();
-				switch (op) {
-				case MINUS, TIMES, DIV -> {
-					if (operandTypeL.isInt() && resultType.isInt()) {
-						// this is complicated. Use a Java method instead
+		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv();
+		// generate code to leave value of expression on top of stack
+		// n.getExpression().visit(this, arg);
+		Label start = new Label();
+		Label end = new Label();
+
+		n.getLeft().visit(this, arg);
+		n.getRight().visit(this, arg);
+		// get the operator and types of operand and result
+		Kind op = n.getOp();
+		IType resultType = n.getType();
+		IType operandTypeL = n.getLeft().getType();
+		IType operandTypeR = n.getRight().getType();
+		switch (op) {
+		case MINUS, TIMES, DIV -> {
+			if (operandTypeL.isInt() && resultType.isInt()) {
+				if (op == Kind.MINUS)
+					mv.visitInsn(Opcodes.ISUB);
+
+				if (op == Kind.TIMES)
+					mv.visitInsn(Opcodes.IMUL);
+				if (op == Kind.DIV)
+					mv.visitInsn(Opcodes.IDIV);
+			} else { // argument is List
+				throw new UnsupportedOperationException("SKIP THIS");
+			}
+			// this is complicated. Use a Java method instead
 //						Label brLabel = new Label();
 //						Label after = new Label();
 //						mv.visitJumpInsn(IFEQ,brLabel);
@@ -119,87 +132,122 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //						mv.visitLabel(brLabel);
 //						mv.visitLdcInsn(1);
 //						mv.visitLabel(after);
-						mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
-					} else { // argument is List
-						throw new UnsupportedOperationException("SKIP THIS");
-					}
+			// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
+
+		}
+		case AND, OR -> {
+			if (operandTypeL.isBoolean() && resultType.isBoolean()) {
+				// this is complicated. Use a Java method instead
+//						Label brLabel = new Label();
+//						Label after = new Label();
+//						mv.visitJumpInsn(IFEQ,brLabel);
+//						mv.visitLdcInsn(0);
+//						mv.visitJumpInsn(GOTO,after);
+//						mv.visitLabel(brLabel);
+//						mv.visitLdcInsn(1);
+//						mv.visitLabel(after);
+				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(Z)Z", false);
+				if (op == Kind.AND)
+
+					mv.visitInsn(Opcodes.IAND);
+
+				if (op == Kind.OR)
+					mv.visitInsn(Opcodes.IOR);
+			} else { // argument is List
+				throw new UnsupportedOperationException("SKIP THIS");
+			}
+		}
+		case EQUALS, NOT_EQUALS, LT, GT -> {
+			if (resultType.isBoolean()) {
+				// this is complicated. Use a Java method instead
+//						Label brLabel = new Label();
+//						Label after = new Label();
+//						mv.visitJumpInsn(IFEQ,brLabel);
+//						mv.visitLdcInsn(0);
+//						mv.visitJumpInsn(GOTO,after);
+//						mv.visitLabel(brLabel);
+//						mv.visitLdcInsn(1);
+//						mv.visitLabel(after);
+				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(Z)Z", false);
+				if (op == Kind.EQUALS) {
+					mv.visitJumpInsn(IF_ACMPEQ, start);
+					mv.visitLdcInsn(false);
+					// mv.visitInsn(Opcodes.ISUB);
 				}
-				case AND, OR -> {
-					if (operandTypeL.isBoolean() && resultType.isBoolean()) {
-						// this is complicated. Use a Java method instead
-//						Label brLabel = new Label();
-//						Label after = new Label();
-//						mv.visitJumpInsn(IFEQ,brLabel);
-//						mv.visitLdcInsn(0);
-//						mv.visitJumpInsn(GOTO,after);
-//						mv.visitLabel(brLabel);
-//						mv.visitLdcInsn(1);
-//						mv.visitLabel(after);
-						mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(Z)Z", false);
-					} else { // argument is List
-						throw new UnsupportedOperationException("SKIP THIS");
-					}
+				if (op == Kind.NOT_EQUALS) {
+					mv.visitJumpInsn(IF_ACMPEQ, start);
+					mv.visitLdcInsn(false);
+					// mv.visitInsn(Opcodes.IMUL);
 				}
-				case EQUALS, NOT_EQUALS, LT, GT -> {
-					if (resultType.isBoolean()) {
-						// this is complicated. Use a Java method instead
-//						Label brLabel = new Label();
-//						Label after = new Label();
-//						mv.visitJumpInsn(IFEQ,brLabel);
-//						mv.visitLdcInsn(0);
-//						mv.visitJumpInsn(GOTO,after);
-//						mv.visitLabel(brLabel);
-//						mv.visitLdcInsn(1);
-//						mv.visitLabel(after);
-						mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(Z)Z", false);
-					} else { // argument is List
-						throw new UnsupportedOperationException("SKIP THIS");
-					}
+				if (op == Kind.LT) {
+					mv.visitJumpInsn(IF_ICMPLT, start);
+					mv.visitLdcInsn(false);
+					// mv.visitInsn(Opcodes.IDIV);
+
 				}
-				case PLUS -> {
-					if (resultType.isInt()) {
-						// this is complicated. Use a Java method instead
-//						Label brLabel = new Label();
-//						Label after = new Label();
-//						mv.visitJumpInsn(IFEQ,brLabel);
-//						mv.visitLdcInsn(0);
-//						mv.visitJumpInsn(GOTO,after);
-//						mv.visitLabel(brLabel);
-//						mv.visitLdcInsn(1);
-//						mv.visitLabel(after);
-						mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
-					} 
-					else if (resultType.isString()) {
-						// this is complicated. Use a Java method instead
-//						Label brLabel = new Label();
-//						Label after = new Label();
-//						mv.visitJumpInsn(IFEQ,brLabel);
-//						mv.visitLdcInsn(0);
-//						mv.visitJumpInsn(GOTO,after);
-//						mv.visitLabel(brLabel);
-//						mv.visitLdcInsn(1);
-//						mv.visitLabel(after);
-						mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
-					}
-					else if (resultType.isList()) {
-						// this is complicated. Use a Java method instead
-//						Label brLabel = new Label();
-//						Label after = new Label();
-//						mv.visitJumpInsn(IFEQ,brLabel);
-//						mv.visitLdcInsn(0);
-//						mv.visitJumpInsn(GOTO,after);
-//						mv.visitLabel(brLabel);
-//						mv.visitLdcInsn(1);
-//						mv.visitLabel(after);
-						mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
-					}
-					else { // argument is List
-						throw new UnsupportedOperationException("SKIP THIS");
-					}
+				if (op == Kind.GT) {
+					mv.visitJumpInsn(IF_ICMPGT, start);
+					mv.visitLdcInsn(false);
+					// mv.visitInsn(Opcodes.IDIV);
 				}
-				default -> throw new UnsupportedOperationException("compiler error");
-				}
-				return null;
+
+			} else { // argument is List
+				throw new UnsupportedOperationException("SKIP THIS");
+			}
+		}
+		case PLUS -> {
+			if (resultType.isInt()) {
+				// this is complicated. Use a Java method instead
+//						Label brLabel = new Label();
+//						Label after = new Label();
+//						mv.visitJumpInsn(IFEQ,brLabel);
+//						mv.visitLdcInsn(0);
+//						mv.visitJumpInsn(GOTO,after);
+//						mv.visitLabel(brLabel);
+//						mv.visitLdcInsn(1);
+//						mv.visitLabel(after);
+//				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
+//				switch (op) {
+//				case PLUS: {
+					mv.visitInsn(Opcodes.IADD);
+//					break;
+//				}
+				
+			} else if (resultType.isString()) {
+				// this is complicated. Use a Java method instead
+//						Label brLabel = new Label();
+//						Label after = new Label();
+//						mv.visitJumpInsn(IFEQ,brLabel);
+//						mv.visitLdcInsn(0);
+//						mv.visitJumpInsn(GOTO,after);
+//						mv.visitLabel(brLabel);
+//						mv.visitLdcInsn(1);
+//						mv.visitLabel(after);
+				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
+				mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "concat",
+						"(Ljava/lang/String;)Ljava/lang/String;", false);
+			} else if (resultType.isList()) {
+				// this is complicated. Use a Java method instead
+//						Label brLabel = new Label();
+//						Label after = new Label();
+//						mv.visitJumpInsn(IFEQ,brLabel);
+//						mv.visitLdcInsn(0);
+//						mv.visitJumpInsn(GOTO,after);
+//						mv.visitLabel(brLabel);
+//						mv.visitLdcInsn(1);
+//						mv.visitLabel(after);
+				mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
+			} else { // argument is List
+				throw new UnsupportedOperationException("SKIP THIS");
+			}
+		}
+		default -> throw new UnsupportedOperationException("compiler error");
+		}
+		mv.visitJumpInsn(Opcodes.GOTO, end);
+		mv.visitLabel(start);
+		mv.visitLdcInsn(true);
+		mv.visitLabel(end);
+		return null;
 	}
 
 	@Override
@@ -278,22 +326,76 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 
 	@Override
 	public Object visitIIdentExpression(IIdentExpression n, Object arg) throws Exception {
-		
-				MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
-				IIdentifier name = n.getName();
-				
-				//INameDef nameDef = n.getVarDef();
-				String varName = name.getName();
-				int typeDesc = name.getSlot();
-				FieldVisitor fieldVisitor = cw.visitField(ACC_PUBLIC | ACC_STATIC | ACC_FINAL, varName, null, null, null);
-				fieldVisitor.visitEnd();
-		//throw new UnsupportedOperationException("TO IMPLEMENT");
-				return null;
+
+		/*
+		 * MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv; IIdentifier name =
+		 * n.getName();
+		 * 
+		 * // INameDef nameDef = n.getVarDef(); String varName = name.getName(); int
+		 * typeDesc = name.getSlot(); FieldVisitor fieldVisitor =
+		 * cw.visitField(ACC_PUBLIC | ACC_STATIC | ACC_FINAL, varName, null, null,
+		 * null); fieldVisitor.visitEnd(); // throw new
+		 * UnsupportedOperationException("TO IMPLEMENT");
+		 */
+//		String text = n.getName().getName();
+
+//		IIdentifier text = n.getName();
+//		System.out.println("354------"+text);
+//		IType type = n.getType();
+//		visitIIdentifier(n.getName(),arg);
+//		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv();
+//		
+//		if(type.isBoolean() || type.isInt()) {
+//			mv.visitVarInsn(Opcodes.ILOAD, n.getName().getSlot());
+//			System.out.println("355------"+type);
+//		}
+//		else
+//		{System.out.println("361------"+type);
+//			mv.visitVarInsn(Opcodes.ALOAD, n.getName().getSlot());
+//		}
+//		return null;
+//		
+//		String text = n.getName().getDec().getText();
+//		IType type = n.getType();
+
+		visitIIdentifier(n.getName(), arg);
+		IDeclaration dec = n.getName().getDec();
+		String text = dec.getText();
+		IType type = n.getType();
+		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv();
+		switch (text) {
+		case "VAR":
+		case "VAL": {
+			if (type.isInt()) {
+				mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETFIELD, runtimeClass, text, "I");
+			} else {
+				if (type.isBoolean()) {
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETFIELD, runtimeClass, text, "Z");
+				} else {
+					if (type.isString()) {
+						mv.visitVarInsn(ALOAD, 0);
+						mv.visitFieldInsn(GETFIELD, runtimeClass, text, "Ljava/lang/String;");
+					}
+				}
+			}
+		}
+		default: {
+			if (type.isBoolean() || type.isInt()) {
+				mv.visitVarInsn(Opcodes.ILOAD, n.getName().getSlot());
+			} else {
+				mv.visitVarInsn(Opcodes.ALOAD, n.getName().getSlot());
+			}
+		}
+		}
+		// n.visit(this, arg);
+		return null;
 	}
 
 	@Override
 	public Object visitIIdentifier(IIdentifier n, Object arg) throws Exception {
-		//throw new UnsupportedOperationException("TO IMPLEMENT");
+		// throw new UnsupportedOperationException("TO IMPLEMENT");
 		return null;
 	}
 
@@ -306,9 +408,11 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 			// use type of expression to determine which return instruction to use
 			IType type = e.getType();
 			if (type.isBoolean()) {
-				Label funcStart = new Label();
-				mv.visitLabel(funcStart);
-				//MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
+
+				/// ---------check label statements commented below--------
+//				Label funcStart = new Label();
+//				mv.visitLabel(funcStart);
+				// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
 				// visit block to generate code for statements
 				n.getBlock().visit(this, mv);
 				mv.visitInsn(IRETURN);
@@ -471,6 +575,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		switch (op) {
 		case MINUS -> {
 			if (operandType.isInt()) {
+				/// ---------check the ineg change----------
 				// this is complicated. Use a Java method instead
 //				Label brLabel = new Label();
 //				Label after = new Label();
@@ -480,7 +585,8 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //				mv.visitLabel(brLabel);
 //				mv.visitLdcInsn(1);
 //				mv.visitLabel(after);
-				mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
+				mv.visitInsn(Opcodes.INEG);
+				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
 			} else { // argument is List
 				throw new UnsupportedOperationException("SKIP THIS");
 			}
@@ -515,9 +621,10 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 			// use type of expression to determine which return instruction to use
 			IType type = e.getType();
 			if (type.isBoolean()) {
-				Label funcStart = new Label();
-				mv.visitLabel(funcStart);
-				//MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
+				// -----------check below 2 line needed or not ---------
+				// Label funcStart = new Label();
+				// mv.visitLabel(funcStart);
+				// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
 				// visit block to generate code for statements
 				n.getBlock().visit(this, mv);
 				mv.visitInsn(IRETURN);
@@ -556,7 +663,16 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 
 	@Override
 	public Object visitIAssignmentStatement(IAssignmentStatement n, Object arg) throws Exception {
-		throw new UnsupportedOperationException("TO IMPLEMENT");
+		// throw new UnsupportedOperationException("TO IMPLEMENT");
+		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
+		IExpression leftExp = n.getLeft();
+		IType leftType = leftExp.getType();
+		IExpression rightExp = n.getRight();
+		leftExp.visit(this, arg);
+		rightExp.visit(this, arg);
+
+		// ----------check return null -----------
+		return null;
 
 	}
 
