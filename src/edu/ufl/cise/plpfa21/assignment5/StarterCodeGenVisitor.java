@@ -40,6 +40,9 @@ import edu.ufl.cise.plpfa21.assignment3.ast.ISwitchStatement;
 import edu.ufl.cise.plpfa21.assignment3.ast.IType;
 import edu.ufl.cise.plpfa21.assignment3.ast.IUnaryExpression;
 import edu.ufl.cise.plpfa21.assignment3.ast.IWhileStatement;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.ImmutableGlobal__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.MutableGlobal__;
+import edu.ufl.cise.plpfa21.assignment3.astimpl.NameDef__;
 import edu.ufl.cise.plpfa21.assignment3.astimpl.Type__;
 //import edu.ufl.cise.plpfa21.assignment5.ReferenceCodeGenVisitor.LocalVarInfo;
 //import edu.ufl.cise.plpfa21.assignment5.ReferenceCodeGenVisitor.MethodVisitorLocalVarTable;
@@ -108,11 +111,11 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		// get the operator and types of operand and result
 		Kind op = n.getOp();
 		IType resultType = n.getType();
-		IType operandTypeL = n.getLeft().getType();
-		IType operandTypeR = n.getRight().getType();
+		IType lType = n.getLeft().getType();
+		IType rType = n.getRight().getType();
 		switch (op) {
 		case MINUS, TIMES, DIV -> {
-			if (operandTypeL.isInt() && resultType.isInt()) {
+			if (lType.isInt() && resultType.isInt()) {
 				if (op == Kind.MINUS)
 					mv.visitInsn(Opcodes.ISUB);
 
@@ -136,7 +139,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 
 		}
 		case AND, OR -> {
-			if (operandTypeL.isBoolean() && resultType.isBoolean()) {
+			if (lType.isBoolean() && resultType.isBoolean()) {
 				// this is complicated. Use a Java method instead
 //						Label brLabel = new Label();
 //						Label after = new Label();
@@ -159,6 +162,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		}
 		case EQUALS, NOT_EQUALS, LT, GT -> {
 			if (resultType.isBoolean()) {
+				if(rType.isInt() || rType.isBoolean()) {
 				// this is complicated. Use a Java method instead
 //						Label brLabel = new Label();
 //						Label after = new Label();
@@ -170,12 +174,12 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //						mv.visitLabel(after);
 				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(Z)Z", false);
 				if (op == Kind.EQUALS) {
-					mv.visitJumpInsn(IF_ACMPEQ, start);
+					mv.visitJumpInsn(IF_ICMPEQ, start);
 					mv.visitLdcInsn(false);
 					// mv.visitInsn(Opcodes.ISUB);
 				}
 				if (op == Kind.NOT_EQUALS) {
-					mv.visitJumpInsn(IF_ACMPEQ, start);
+					mv.visitJumpInsn(IF_ICMPNE, start);
 					mv.visitLdcInsn(false);
 					// mv.visitInsn(Opcodes.IMUL);
 				}
@@ -190,7 +194,19 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 					mv.visitLdcInsn(false);
 					// mv.visitInsn(Opcodes.IDIV);
 				}
-
+				}
+				else if(rType.isString()) {
+					if (op == Kind.EQUALS) {
+						mv.visitJumpInsn(IF_ACMPEQ, start);
+						mv.visitLdcInsn(false);
+						// mv.visitInsn(Opcodes.ISUB);
+					}
+					if (op == Kind.NOT_EQUALS) {
+						mv.visitJumpInsn(IF_ACMPEQ, start);
+						mv.visitLdcInsn(false);
+						// mv.visitInsn(Opcodes.IMUL);
+					}
+				}
 			} else { // argument is List
 				throw new UnsupportedOperationException("SKIP THIS");
 			}
@@ -209,10 +225,10 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(I)I", false);
 //				switch (op) {
 //				case PLUS: {
-					mv.visitInsn(Opcodes.IADD);
+				mv.visitInsn(Opcodes.IADD);
 //					break;
 //				}
-				
+
 			} else if (resultType.isString()) {
 				// this is complicated. Use a Java method instead
 //						Label brLabel = new Label();
@@ -358,7 +374,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //		String text = n.getName().getDec().getText();
 //		IType type = n.getType();
 
-		visitIIdentifier(n.getName(), arg);
+		// visitIIdentifier(n.getName(), arg);
 		IDeclaration dec = n.getName().getDec();
 		String text = dec.getText();
 		IType type = n.getType();
@@ -367,20 +383,21 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		case "VAR":
 		case "VAL": {
 			if (type.isInt()) {
-				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, runtimeClass, text, "I");
+				// mv.visitVarInsn(ALOAD, 0);
+				mv.visitFieldInsn(GETSTATIC, className, n.getName().getName(), "I");
 			} else {
 				if (type.isBoolean()) {
-					mv.visitVarInsn(ALOAD, 0);
-					mv.visitFieldInsn(GETFIELD, runtimeClass, text, "Z");
+					// mv.visitVarInsn(ALOAD, 0);
+					mv.visitFieldInsn(GETSTATIC, className, n.getName().getName(), "Z");
 				} else {
 					if (type.isString()) {
-						mv.visitVarInsn(ALOAD, 0);
-						mv.visitFieldInsn(GETFIELD, runtimeClass, text, "Ljava/lang/String;");
+						// mv.visitVarInsn(ALOAD, 0);
+						mv.visitFieldInsn(GETSTATIC, className, n.getName().getName(), "Ljava/lang/String;");
 					}
 				}
 			}
 		}
+			break;
 		default: {
 			if (type.isBoolean() || type.isInt()) {
 				mv.visitVarInsn(Opcodes.ILOAD, n.getName().getSlot());
@@ -388,6 +405,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 				mv.visitVarInsn(Opcodes.ALOAD, n.getName().getSlot());
 			}
 		}
+			break;
 		}
 		// n.visit(this, arg);
 		return null;
@@ -396,6 +414,44 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 	@Override
 	public Object visitIIdentifier(IIdentifier n, Object arg) throws Exception {
 		// throw new UnsupportedOperationException("TO IMPLEMENT");
+//		return null;
+
+		IDeclaration dec = n.getDec();
+		System.out.println("Line 340" + dec.getText());
+		String text = n.getDec().getText();
+		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv();
+		switch (text) {
+		case "VAR": {
+			MutableGlobal__ checkType = (MutableGlobal__) n.getDec();
+			if (checkType.getVarDef().getType().isInt()) {
+				mv.visitFieldInsn(PUTSTATIC, className, text, "I");
+			} else if (checkType.getVarDef().getType().isBoolean()) {
+				mv.visitFieldInsn(PUTSTATIC, className, text, "Z");
+			} else if (checkType.getVarDef().getType().isString()) {
+				mv.visitFieldInsn(PUTSTATIC, className, text, "Ljava/lang/String;");
+			}
+
+			break;
+		}
+		case "VAL": {
+			ImmutableGlobal__ checkType = (ImmutableGlobal__) n.getDec();
+			if (checkType.getVarDef().getType().isInt()) {
+				mv.visitFieldInsn(PUTSTATIC, className, text, "I");
+			} else if (checkType.getVarDef().getType().isBoolean()) {
+					mv.visitFieldInsn(PUTSTATIC, className, text, "Z");
+			}
+			 else if (checkType.getVarDef().getType().isString()) {
+						mv.visitFieldInsn(PUTSTATIC, className, text, "Ljava/lang/String;");
+					}
+			break;
+		}
+		default : {
+			System.out.print(n.getDec());
+			NameDef__ checkTYpe = (NameDef__) n.getDec();
+			System.out.println("Line 396" + checkTYpe.getType());
+			break;
+		}
+		}
 		return null;
 	}
 
@@ -403,10 +459,16 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 	public Object visitIIfStatement(IIfStatement n, Object arg) throws Exception {
 		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
 		IExpression e = n.getGuardExpression();
+		 Label startBlock = new Label();
+	        Label endBlock = new Label();
+	        
 		if (e != null) { // the return statement has an expression
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
 			// use type of expression to determine which return instruction to use
 			IType type = e.getType();
+			
+			mv.visitJumpInsn(IF_ICMPNE, endBlock);
+			mv.visitLabel(startBlock);
 			if (type.isBoolean()) {
 
 				/// ---------check label statements commented below--------
@@ -423,6 +485,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 					// function has void return type) so use this return statement.
 			mv.visitInsn(RETURN);
 		}
+		
 		return null;
 	}
 
@@ -644,7 +707,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		INameDef nameDef = n.getVarDef();
 		String varName = nameDef.getIdent().getName();
 		String typeDesc = nameDef.getType().getDesc();
-		FieldVisitor fieldVisitor = cw.visitField(ACC_PUBLIC | ACC_STATIC | ACC_FINAL, varName, typeDesc, null, null);
+		FieldVisitor fieldVisitor = cw.visitField(ACC_PUBLIC | ACC_STATIC, varName, typeDesc, null, null);
 		fieldVisitor.visitEnd();
 		// generate code to initialize field.
 		IExpression e = n.getExpression();
@@ -668,9 +731,14 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		IExpression leftExp = n.getLeft();
 		IType leftType = leftExp.getType();
 		IExpression rightExp = n.getRight();
-		leftExp.visit(this, arg);
+		// leftExp.visit(this, arg);
 		rightExp.visit(this, arg);
-
+		if (leftType.isInt())
+			mv.visitFieldInsn(PUTSTATIC, className, leftExp.getText(), "I");
+		else if (leftType.isBoolean())
+			mv.visitFieldInsn(PUTSTATIC, className, leftExp.getText(), "Z");
+		else if (leftType.isString())
+			mv.visitFieldInsn(PUTSTATIC, className, leftExp.getText(), "Ljava/lang/String;");
 		// ----------check return null -----------
 		return null;
 
