@@ -91,6 +91,7 @@ public class Parser implements IPLPParser {
 
 	public Declaration__ declaration() throws Exception {
 		Declaration__ first = null;
+		IPLPToken temp=null;
 		switch (kind) {
 		case KW_FUN:
 			first = function();
@@ -103,8 +104,9 @@ public class Parser implements IPLPParser {
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				IDGlobal = new Identifier__(line, pos, text, text);
+				temp=this.token;
 				callToken();
-				NameDef = nameDef(IDGlobal, this.token);
+				NameDef = nameDef(IDGlobal, temp);
 				// callToken();
 				if (kind == Kind.ASSIGN) {
 					callToken();
@@ -131,8 +133,9 @@ public class Parser implements IPLPParser {
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				Identifier__ ID1 = new Identifier__(line, pos, text, text);
+				temp=this.token;
 				callToken();
-				NameDef = nameDef(ID1,this.token);
+				NameDef = nameDef(ID1,temp);
 				// callToken();
 				if (kind == Kind.ASSIGN) {
 					callToken();
@@ -163,6 +166,7 @@ public class Parser implements IPLPParser {
 
 	public FunctionDeclaration___ function() throws Exception {
 		IPLPToken tokenCheck = this.token;
+		IPLPToken temp;
 		FunctionDeclaration___ first;
 		// identifier, namedef list, result TYPE, block
 		Identifier__ IDFunc;
@@ -179,8 +183,9 @@ public class Parser implements IPLPParser {
 				callToken();
 				if (kind == Kind.IDENTIFIER) {
 					IDGlobal = new Identifier__(line, pos, text, text);
+					temp=this.token;
 					callToken();
-					ND = nameDef(IDGlobal,this.token);
+					ND = nameDef(IDGlobal,temp);
 					listND.add(ND);
 					// should check for comma and more nameDef
 					// callToken();
@@ -189,8 +194,9 @@ public class Parser implements IPLPParser {
 						callToken();
 						if (kind == Kind.IDENTIFIER) {
 							IDGlobal = new Identifier__(line, pos, text, text);
+							temp=this.token;
 							callToken();
-							ND = nameDef(IDGlobal,this.token);
+							ND = nameDef(IDGlobal,temp);
 							listND.add(ND);
 						} else
 							throw new SyntaxException("invalid synatx 5", line, pos);
@@ -264,8 +270,9 @@ public class Parser implements IPLPParser {
 			callToken();
 			if (kind == Kind.IDENTIFIER) {
 				IDGlobal = new Identifier__(line, pos, text, text);
+				IPLPToken 	temp=this.token;
 				callToken();
-				localDef = nameDef(IDGlobal,this.token);
+				localDef = nameDef(IDGlobal,temp);
 				if (kind == Kind.ASSIGN) {
 					callToken();
 					Exp = expression();
