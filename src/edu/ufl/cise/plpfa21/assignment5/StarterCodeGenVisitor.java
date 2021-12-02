@@ -162,8 +162,8 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		}
 		case EQUALS, NOT_EQUALS, LT, GT -> {
 			if (resultType.isBoolean()) {
-				if(rType.isInt() || rType.isBoolean()) {
-				// this is complicated. Use a Java method instead
+				if (rType.isInt() || rType.isBoolean()) {
+					// this is complicated. Use a Java method instead
 //						Label brLabel = new Label();
 //						Label after = new Label();
 //						mv.visitJumpInsn(IFEQ,brLabel);
@@ -172,30 +172,29 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //						mv.visitLabel(brLabel);
 //						mv.visitLdcInsn(1);
 //						mv.visitLabel(after);
-				// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(Z)Z", false);
-				if (op == Kind.EQUALS) {
-					mv.visitJumpInsn(IF_ICMPEQ, start);
-					mv.visitLdcInsn(false);
-					// mv.visitInsn(Opcodes.ISUB);
-				}
-				if (op == Kind.NOT_EQUALS) {
-					mv.visitJumpInsn(IF_ICMPNE, start);
-					mv.visitLdcInsn(false);
-					// mv.visitInsn(Opcodes.IMUL);
-				}
-				if (op == Kind.LT) {
-					mv.visitJumpInsn(IF_ICMPLT, start);
-					mv.visitLdcInsn(false);
-					// mv.visitInsn(Opcodes.IDIV);
+					// mv.visitMethodInsn(INVOKESTATIC, runtimeClass, "not", "(Z)Z", false);
+					if (op == Kind.EQUALS) {
+						mv.visitJumpInsn(IF_ICMPEQ, start);
+						mv.visitLdcInsn(false);
+						// mv.visitInsn(Opcodes.ISUB);
+					}
+					if (op == Kind.NOT_EQUALS) {
+						mv.visitJumpInsn(IF_ICMPNE, start);
+						mv.visitLdcInsn(false);
+						// mv.visitInsn(Opcodes.IMUL);
+					}
+					if (op == Kind.LT) {
+						mv.visitJumpInsn(IF_ICMPLT, start);
+						mv.visitLdcInsn(false);
+						// mv.visitInsn(Opcodes.IDIV);
 
-				}
-				if (op == Kind.GT) {
-					mv.visitJumpInsn(IF_ICMPGT, start);
-					mv.visitLdcInsn(false);
-					// mv.visitInsn(Opcodes.IDIV);
-				}
-				}
-				else if(rType.isString()) {
+					}
+					if (op == Kind.GT) {
+						mv.visitJumpInsn(IF_ICMPGT, start);
+						mv.visitLdcInsn(false);
+						// mv.visitInsn(Opcodes.IDIV);
+					}
+				} else if (rType.isString()) {
 					if (op == Kind.EQUALS) {
 						mv.visitJumpInsn(IF_ACMPEQ, start);
 						mv.visitLdcInsn(false);
@@ -438,17 +437,20 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 			if (checkType.getVarDef().getType().isInt()) {
 				mv.visitFieldInsn(PUTSTATIC, className, text, "I");
 			} else if (checkType.getVarDef().getType().isBoolean()) {
-					mv.visitFieldInsn(PUTSTATIC, className, text, "Z");
+				mv.visitFieldInsn(PUTSTATIC, className, text, "Z");
+			} else if (checkType.getVarDef().getType().isString()) {
+				mv.visitFieldInsn(PUTSTATIC, className, text, "Ljava/lang/String;");
 			}
-			 else if (checkType.getVarDef().getType().isString()) {
-						mv.visitFieldInsn(PUTSTATIC, className, text, "Ljava/lang/String;");
-					}
 			break;
 		}
-		default : {
+		default: {
 			System.out.print(n.getDec());
 			NameDef__ checkTYpe = (NameDef__) n.getDec();
-			System.out.println("Line 396" + checkTYpe.getType());
+			if (checkTYpe.getType().isInt() || checkTYpe.getType().isBoolean()) {
+				mv.visitVarInsn(ILOAD, n.getSlot());
+			} else {
+				mv.visitVarInsn(ALOAD, n.getSlot());
+			}
 			break;
 		}
 		}
@@ -459,16 +461,16 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 	public Object visitIIfStatement(IIfStatement n, Object arg) throws Exception {
 		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
 		IExpression e = n.getGuardExpression();
-		 Label startBlock = new Label();
-	        Label endBlock = new Label();
-	        
+		Label expLabel = new Label();
+		Label blkLabel = new Label();
+
 		if (e != null) { // the return statement has an expression
+			mv.visitLabel(expLabel);
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
+			mv.visitJumpInsn(IF_ICMPLE, expLabel);
 			// use type of expression to determine which return instruction to use
 			IType type = e.getType();
-			
-			mv.visitJumpInsn(IF_ICMPNE, endBlock);
-			mv.visitLabel(startBlock);
+
 			if (type.isBoolean()) {
 
 				/// ---------check label statements commented below--------
@@ -476,8 +478,12 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //				mv.visitLabel(funcStart);
 				// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
 				// visit block to generate code for statements
+				mv.visitLabel(blkLabel);
 				n.getBlock().visit(this, mv);
+				mv.visitJumpInsn(GOTO, blkLabel);
+				mv.visitLabel(blkLabel);
 				mv.visitInsn(IRETURN);
+
 			} else {
 				mv.visitInsn(ARETURN);
 			}
@@ -485,7 +491,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 					// function has void return type) so use this return statement.
 			mv.visitInsn(RETURN);
 		}
-		
+
 		return null;
 	}
 
