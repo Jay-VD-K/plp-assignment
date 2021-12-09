@@ -459,55 +459,30 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 
 	@Override
 	public Object visitIIfStatement(IIfStatement n, Object arg) throws Exception {
-//		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
-//		IExpression e = n.getGuardExpression();
-//		Label expLabel = new Label();
-//		Label blkLabel = new Label();
-//
-//		if (e != null) { // the return statement has an expression
-//			mv.visitLabel(expLabel);
-//			e.visit(this, arg); // generate code to leave value of expression on top of stack.
-//			mv.visitJumpInsn(IF_ICMPLE, expLabel);
-//			// use type of expression to determine which return instruction to use
-//			IType type = e.getType();
-//
-//			if (type.isBoolean()) {
-//
-//				/// ---------check label statements commented below--------
-////				Label funcStart = new Label();
-////				mv.visitLabel(funcStart);
-//				// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
-//				// visit block to generate code for statements
-//				mv.visitLabel(blkLabel);
-//				n.getBlock().visit(this, arg);
-//				mv.visitJumpInsn(GOTO, blkLabel);
-//				mv.visitLabel(blkLabel);
-//				mv.visitInsn(IRETURN);
-//
-//			} else {
-//				mv.visitInsn(ARETURN);
-//			}
-//		} else { // there is no argument, (and we have verified duirng type checking that
-//					// function has void return type) so use this return statement.
-//			mv.visitInsn(RETURN);
-//		}
-//
-//		return null;
-		
+	
 		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
 		IExpression e = n.getGuardExpression();
+		Label IFend = new Label();
+		
 		if (e != null) { // the return statement has an expression
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
 			// use type of expression to determine which return instruction to use
+			mv.visitJumpInsn(IFEQ, IFend);
+			Label IFstart = new Label();
+			mv.visitLabel(IFstart);
 			IType type = e.getType();
 			if (type.isBoolean()) {
-				// -----------check below 2 line needed or not ---------
 				// Label funcStart = new Label();
 				// mv.visitLabel(funcStart);
 				// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
 				// visit block to generate code for statements
 				n.getBlock().visit(this, arg);
-				mv.visitInsn(IRETURN);
+				Label IFe = new Label();
+				mv.visitLabel(IFe);
+				mv.visitLabel(IFend);
+				Label IFendafter = new Label();
+				mv.visitLabel(IFendafter);
+				//mv.visitInsn(IRETURN);
 			} else {
 				mv.visitInsn(ARETURN);
 			}
@@ -730,18 +705,30 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 	public Object visitIWhileStatement(IWhileStatement n, Object arg) throws Exception {
 		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
 		IExpression e = n.getGuardExpression();
+		Label whileG = new Label(); //guard exp
+		Label whileB = new Label(); //inside while
+		
 		if (e != null) { // the return statement has an expression
-			e.visit(this, arg); // generate code to leave value of expression on top of stack.
+			//e.visit(this, arg); // generate code to leave value of expression on top of stack.
 			// use type of expression to determine which return instruction to use
+			mv.visitJumpInsn(GOTO, whileG);
+			mv.visitLabel(whileB);
+			
 			IType type = e.getType();
 			if (type.isBoolean()) {
-				// -----------check below 2 line needed or not ---------
 				// Label funcStart = new Label();
 				// mv.visitLabel(funcStart);
 				// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv);
 				// visit block to generate code for statements
 				n.getBlock().visit(this, arg);
-				mv.visitInsn(IRETURN);
+				Label whileBE = new Label(); //while body end
+				mv.visitLabel(whileBE);
+				mv.visitLabel(whileG);
+				e.visit(this, arg); // generate code to leave value of expression on top of stack.
+				Label whileGE = new Label(); //guard exp end
+				mv.visitLabel(whileGE);
+				mv.visitJumpInsn(IFNE, whileB);
+				//mv.visitInsn(IRETURN);
 			} else {
 				mv.visitInsn(ARETURN);
 			}
