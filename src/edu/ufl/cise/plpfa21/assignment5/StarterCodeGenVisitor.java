@@ -337,7 +337,22 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 
 	@Override
 	public Object visitIFunctionCallExpression(IFunctionCallExpression n, Object arg) throws Exception {
-		throw new UnsupportedOperationException("TO IMPLEMENT");
+		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv();
+		String fn = n.getName().getText();
+		String text = n.getName().getDec().getText();
+		IType type = n.getType();
+		mv.visitVarInsn(Opcodes.ILOAD, n.getName().getSlot());
+		
+		if(type.isInt()) {
+			mv.visitMethodInsn(INVOKESTATIC, className, fn, "(I)I", false);
+		}
+		else if (type.isBoolean()) {
+			mv.visitMethodInsn(INVOKESTATIC, className, fn, "(I)Z", false);
+		}
+		else {
+		mv.visitMethodInsn(INVOKESTATIC, className, fn, "(I)V", false);
+		}
+		return null;
 	}
 
 	@Override
@@ -518,29 +533,33 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 
 	@Override
 	public Object visitILetStatement(ILetStatement n, Object arg) throws Exception {
-
 		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
 		INameDef letDef = n.getLocalDef();
 		String nameLet = letDef.getText();
 		IExpression e = n.getExpression();
-		// LocalVarInfo localVar;
+		
+		Label IFend = new Label();
 		List<LocalVarInfo> localVar = new ArrayList<LocalVarInfo>();
 		String desc = letDef.getType().getDesc();
-		letDef.getIdent().setSlot(0);
+		//letDef.getIdent().setSlot(slotLocal++);
 		localVar.add(new LocalVarInfo(letDef.getIdent().getName(), desc, null, null));
+		mv.visitCode();
+		mv.visitVarInsn(Opcodes.ILOAD, letDef.getIdent().getSlot());
 		Label funcStart = new Label();
 		mv.visitLabel(funcStart);
 		MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv, localVar);
-
+		CodeGenUtils.genDebugPrint(mv,"");
 		// IExpression e = n.getExpression();
 		if (e != null) { // the return statement has an expression
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
-			mv.visitVarInsn(Opcodes.ILOAD, letDef.getIdent().getSlot());
+			//mv.visitVarInsn(Opcodes.ILOAD, letDef.getIdent().getSlot());
+			Label IFstart = new Label();
+			mv.visitLabel(IFstart);
 			n.getBlock().visit(this, arg);
 			Label funcEnd = new Label();
-			mv.visitLabel(funcEnd);
-
 			addLocals(context, funcStart, funcEnd);
+			
+			mv.visitEnd();
 			// mv.visitInsn(IRETURN);
 //			} else {
 //				mv.visitInsn(ARETURN);
@@ -550,7 +569,6 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 			mv.visitInsn(RETURN);
 		}
 		return null;
-
 	}
 
 	@Override
@@ -576,6 +594,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 	@Override
 	public Object visitIProgram(IProgram n, Object arg) throws Exception {
 		cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		//cw = new ClassWriter(0);
 		/*
 		 * If the call to mv.visitMaxs(1, 1) crashes, it is sometime helpful to
 		 * temporarily try it without COMPUTE_FRAMES. You won't get a runnable class
@@ -637,6 +656,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
 			// use type of expression to determine which return instruction to use
 			IType type = e.getType();
+			//CodeGenUtils.genDebugPrintTOS(mv,type);
 			if (type.isInt() || type.isBoolean()) {
 				mv.visitInsn(IRETURN);
 			} else {
@@ -791,9 +811,10 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 				mv.visitFieldInsn(PUTSTATIC, className, leftExp.getText(), "Z");
 			else if (leftType.isString())
 				mv.visitFieldInsn(PUTSTATIC, className, leftExp.getText(), "Ljava/lang/String;");
-		} else
+		} else 
+			//if (leftType.equals(Type__.voidType)) {
 			leftExp.visit(this, arg);
-		// }
+		//}
 		// ----------check return null -----------
 		return null;
 
