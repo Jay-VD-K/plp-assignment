@@ -268,16 +268,16 @@ public class TypeCheckVisitor implements ASTVisitor {
 	 */
 	@Override
 	public Object visitINameDef(INameDef n, Object arg) throws Exception {
-		IIdentifier ident = n.getIdent();
-		ident.setSlot(slotCount++);
-
 		String name = n.getIdent().getName();
 		IType type = (IType) n.getType();
+		IIdentifier ident = n.getIdent();
 		IType varType = type != null ? (IType) type.visit(this, null) : Type__.undefinedType;
 		if (arg instanceof IMutableGlobal || arg instanceof IImmutableGlobal) {
 			check(symtab.insert(name, (IDeclaration) arg), n, "Variable " + name + "already declared in this scope");
 		} else {
+			ident.setSlot(slotCount);
 			check(symtab.insert(name, n), n, "Variable " + name + "already declared in this scope");
+			slotCount++;
 		}
 		return varType;
 	}
@@ -294,6 +294,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 		for (IDeclaration dec : decs) {
 			dec.visit(this, symtab);
 		}
+		slotCount = 0;
 		return n;
 	}
 
@@ -519,8 +520,14 @@ public class TypeCheckVisitor implements ASTVisitor {
 		IDeclaration dec = symtab.lookupDec(name);
 		check(dec != null, n, "identifier not declared");
 		n.setDec(dec);
-		int slot = n.getSlot();
-		n.setSlot(++slot);
+		IDeclaration decNew = n.getDec();
+		if (decNew instanceof INameDef) {
+			INameDef ndef = (INameDef) decNew;
+			IIdentifier ident = ndef.getIdent();
+			n.setSlot(ident.getSlot());
+		} else {
+			n.setSlot(0);
+		}
 		return dec;
 	}
 
