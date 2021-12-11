@@ -49,6 +49,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 	}
 
 	SymbolTable symtab = new SymbolTable();
+	static int slotCount = 0;
 
 	private void check(boolean b, IASTNode n, String message) throws TypeCheckException {
 		if (!b) {
@@ -267,6 +268,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 	 */
 	@Override
 	public Object visitINameDef(INameDef n, Object arg) throws Exception {
+		IIdentifier ident = n.getIdent();
+		ident.setSlot(slotCount++);
+
 		String name = n.getIdent().getName();
 		IType type = (IType) n.getType();
 		IType varType = type != null ? (IType) type.visit(this, null) : Type__.undefinedType;
@@ -364,9 +368,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 //				cblock.visit(this, arg);
 
 			}
-		for (IBlock cBlock : caseBlock) {
-			cBlock.visit(this, arg); // check block is correctly typed
-		}
+			for (IBlock cBlock : caseBlock) {
+				cBlock.visit(this, arg); // check block is correctly typed
+			}
 
 			// check for default block
 			IBlock dblock = n.getDefaultBlock();
@@ -515,8 +519,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 		IDeclaration dec = symtab.lookupDec(name);
 		check(dec != null, n, "identifier not declared");
 		n.setDec(dec);
-		n.setSlot(0);
-		
+		int slot = n.getSlot();
+		n.setSlot(++slot);
 		return dec;
 	}
 
