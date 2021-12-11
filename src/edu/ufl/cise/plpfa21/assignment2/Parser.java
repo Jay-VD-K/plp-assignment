@@ -420,7 +420,6 @@ public class Parser implements IPLPParser {
 				callToken();
 			else
 				throw new SyntaxException("semi not found 3", line, pos);
-			System.out.println("410----------"+tokenCheck.getText());
 			first = new ReturnStatement__(tokenCheck.getLine(), tokenCheck.getCharPositionInLine(), tokenCheck.getText(), returnExp);
 		}
 			break;
