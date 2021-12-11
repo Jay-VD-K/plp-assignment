@@ -25,7 +25,8 @@ import edu.ufl.cise.plpfa21.assignment5.CodeGenUtils.DynamicClassLoader;
 
 public class CodeGenTests {
 
-	/** Retrieves value of global int variable from loaded classfile.
+	/**
+	 * Retrieves value of global int variable from loaded classfile.
 	 * 
 	 * @param testClass
 	 * @param fieldName
@@ -52,6 +53,7 @@ public class CodeGenTests {
 
 	/**
 	 * Retrieves value of global String variable from loaded classfile
+	 * 
 	 * @param testClass
 	 * @param fieldName
 	 * @return
@@ -76,7 +78,8 @@ public class CodeGenTests {
 	}
 
 	/**
-	 * Generates  a classfile for the given source program.  The classfile has the given name and package.
+	 * Generates a classfile for the given source program. The classfile has the
+	 * given name and package.
 	 * 
 	 * @param input
 	 * @param className
@@ -89,11 +92,11 @@ public class CodeGenTests {
 		IASTNode ast = CompilerComponentFactory.getParser(input).parse();
 		ast.visit(CompilerComponentFactory.getTypeCheckVisitor(), null);
 		show(ast);
-		byte[] bytecode = (byte[]) ast.visit(CompilerComponentFactory.getCodeGenVisitor(className, packageName, ""), null);
+		byte[] bytecode = (byte[]) ast.visit(CompilerComponentFactory.getCodeGenVisitor(className, packageName, ""),
+				null);
 		show(CodeGenUtils.bytecodeToString(bytecode));
 		return bytecode;
 	}
-
 
 	/**
 	 * Executes indicated method defined in bytecode and returns the result. args is
@@ -111,7 +114,7 @@ public class CodeGenTests {
 	 */
 	Object loadClassAndRunMethod(byte[] bytecode, String className, String methodName, Object[] args) throws Exception {
 		Class<?> testClass = getClass(bytecode, className);
-		return runMethod(testClass,methodName, args);
+		return runMethod(testClass, methodName, args);
 	}
 
 	private Method findMethod(String name, Method[] methods) {
@@ -129,14 +132,11 @@ public class CodeGenTests {
 		return testClass;
 	}
 
-
 	Object runMethod(Class<?> testClass, String methodName, Object[] args) throws Exception {
 		Method[] methods = testClass.getDeclaredMethods();
 		Method m = findMethod(methodName, methods);
 		return m.invoke(null, args);
 	}
-
-	
 
 //	@BeforeAll
 //	public static void beforeAll() throws FileNotFoundException {
@@ -151,6 +151,7 @@ public class CodeGenTests {
 	static PrintStream out = System.out;
 
 	static boolean VERBOSE = true;
+
 	void show(Object o) {
 		if (VERBOSE) {
 			System.out.println(o);
@@ -159,7 +160,7 @@ public class CodeGenTests {
 
 	static final String className = "TestClass";
 	static final String packageName = "edu.ufl.cise.plpfa21.tests";
-	
+
 	@DisplayName("testLiteral_boolean_true")
 	@Test
 	public void testLiteral_boolean_true(TestInfo testInfo) throws Exception {
@@ -210,8 +211,6 @@ public class CodeGenTests {
 		String result = (String) loadClassAndRunMethod(bytecode, className, "f", null);
 		assertEquals("hello", result);
 	}
-
-
 
 	@DisplayName("initGlobal_int0")
 	@Test
@@ -548,8 +547,7 @@ public class CodeGenTests {
 		boolean result = (boolean) runMethod(testClass, "f", null);
 		assertEquals(false, result);
 	}
-	
-	
+
 	@DisplayName("unaryNot1")
 	@Test
 	public void unaryNot1(TestInfo testInfo) throws Exception {
@@ -878,7 +876,7 @@ public class CodeGenTests {
 		String result = (String) loadClassAndRunMethod(bytecode, className, "g", null);
 		assertEquals("not zero", result);
 	}
-	
+
 	@DisplayName("while_noparams0")
 	@Test
 	public void while_noparams0(TestInfo testInfo) throws Exception {
@@ -898,11 +896,11 @@ public class CodeGenTests {
 				""";
 		byte[] bytecode = compile(input, className, packageName);
 		show(CodeGenUtils.bytecodeToString(bytecode));
-		Object[] params = { };
+		Object[] params = {};
 		int result = (int) loadClassAndRunMethod(bytecode, className, "a", params);
 		assertEquals(10, result);
 	}
-	
+
 	@DisplayName("while_noparams1")
 	@Test
 	public void while_noparams1(TestInfo testInfo) throws Exception {
@@ -922,11 +920,11 @@ public class CodeGenTests {
 				""";
 		byte[] bytecode = compile(input, className, packageName);
 		show(CodeGenUtils.bytecodeToString(bytecode));
-		Object[] params = { };
+		Object[] params = {};
 		int result = (int) loadClassAndRunMethod(bytecode, className, "a", params);
 		assertEquals(0, result);
-	}	
-	
+	}
+
 	@DisplayName("while_noparams2")
 	@Test
 	public void while_noparams2(TestInfo testInfo) throws Exception {
@@ -946,11 +944,10 @@ public class CodeGenTests {
 				""";
 		byte[] bytecode = compile(input, className, packageName);
 		show(CodeGenUtils.bytecodeToString(bytecode));
-		Object[] params = { };
+		Object[] params = {};
 		int result = (int) loadClassAndRunMethod(bytecode, className, "a", params);
 		assertEquals(4, result);
-	}		
-
+	}
 
 	@DisplayName("funcWithParams0")
 	@Test
@@ -1261,7 +1258,120 @@ public class CodeGenTests {
 		assertEquals(5, getInt(testClass, "y"));
 	}
 
+	@DisplayName("jayavidhi_kumar_test0")
+	@Test
+	public void jayavidhi_kumar_test0(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR x = 0;
+				VAL y = 1;
+				FUN g():STRING
+				DO
+				IF x!=y DO RETURN "zero"; END
+				RETURN "not zero";
+				END
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		String result = (String) loadClassAndRunMethod(bytecode, className, "g", null);
+		assertEquals("zero", result);
+	}
 
-
+	@DisplayName("jayavidhi_kumar_test1")
+	@Test
+	public void jayavidhi_kumar_test1(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR sum = "HELLO";
+				FUN a(i:INT, end:INT, by:BOOLEAN):STRING
+				DO
+				  WHILE by == TRUE DO
+				     IF i < end DO
+						by = FALSE;
+					END
+				  END
+				  RETURN sum+"WORLD";
+				END
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		Object[] params = { 1, 5, true };
+		String result = (String) loadClassAndRunMethod(bytecode, className, "a", params);
+		assertEquals("HELLOWORLD", result);
+	}
+	
+	
+	@DisplayName("jayavidhi_kumar_test2")
+	@Test
+	public void jayavidhi_kumar_test2(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR sum = 0;
+				FUN a(i:INT, end:INT, by:INT, bool:BOOLEAN, str: STRING):STRING
+				DO
+				  WHILE i < end DO
+				     sum = sum + i;
+				     i = i + by;
+				     str = str+"world";
+				     END
+				  RETURN str;
+				END
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		Object[] params = { 1, 5, 1, true, "hello" };
+		String result = (String) loadClassAndRunMethod(bytecode, className, "a", params);
+		assertEquals("helloworldworldworldworld", result);
+	}
+	
+	
+	@DisplayName("jayavidhi_kumar_test3")
+	@Test
+	public void jayavidhi_kumar_test3(TestInfo testInfo) throws Exception {
+		String input = """
+				VAL  a: INT = 2+4;
+				VAL  b: STRING = "hello";
+				VAR  z: STRING = "hellooo";
+				VAL  k: BOOLEAN = 2<4;
+				VAL  c: BOOLEAN = a<10;
+				VAL  d: BOOLEAN = b>z;
+				VAL  e:  BOOLEAN= c == d;
+				VAL  f:  BOOLEAN= e != d;
+				VAL  g:  BOOLEAN = !f != d;
+				VAL  h:  BOOLEAN  = !(f == d);
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		Class<?> testClass = getClass(bytecode, className);
+		assertEquals(true, getBoolean(testClass, "k"));
+		assertEquals(true, getBoolean(testClass, "c"));
+		assertEquals(false, getBoolean(testClass, "d"));
+		assertEquals(false, getBoolean(testClass, "e"));
+		assertEquals(false, getBoolean(testClass, "f"));
+		assertEquals(true, getBoolean(testClass, "g"));
+		assertEquals(false, getBoolean(testClass, "h"));
+		assertEquals(6, getInt(testClass, "a"));
+	}
+	
+	
+	@DisplayName("jayavidhi_kumar_4")
+	@Test
+	public void jayavidhi_kumar_4(TestInfo testInfo) throws Exception {
+		String input = """
+				VAR y:INT;
+				VAR a:INT;
+				FUN func():INT DO
+				IF TRUE
+				DO
+				LET x:INT = 1 DO END
+				a = x;
+				END
+				IF FALSE DO a = 0; END
+				RETURN a;
+				END
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		Object[] params = { true };
+		int result = (int) loadClassAndRunMethod(bytecode, className, "func", params);
+		assertEquals(1, result);
+	}
 
 }
