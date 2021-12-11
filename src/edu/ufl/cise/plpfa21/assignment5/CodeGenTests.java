@@ -1351,7 +1351,7 @@ public class CodeGenTests {
 	}
 	
 	
-	@DisplayName("jayavidhi_kumar_4")
+	@DisplayName("jayavidhi_kumar_test4")
 	@Test
 	public void jayavidhi_kumar_4(TestInfo testInfo) throws Exception {
 		String input = """
