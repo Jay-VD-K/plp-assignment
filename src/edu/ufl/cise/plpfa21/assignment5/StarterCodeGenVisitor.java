@@ -437,7 +437,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		INameDef letDef = n.getLocalDef();
 		String nameLet = letDef.getText();
 		IExpression e = n.getExpression();
-		IType eType = e.getType();
+		
 		List<LocalVarInfo> localVar = new ArrayList<LocalVarInfo>();
 		String desc = letDef.getType().getDesc();
 		int slot = letDef.getIdent().getSlot();
@@ -452,6 +452,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		Label funcStart = new Label();
 		mv.visitLabel(funcStart);
 		if (e != null) { // the return statement has an expression
+			IType eType = e.getType();
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
 			n.getBlock().visit(this, arg);
 			Label funcEnd = new Label();
