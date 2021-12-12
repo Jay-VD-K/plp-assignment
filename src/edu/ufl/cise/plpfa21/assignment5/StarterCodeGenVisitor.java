@@ -438,28 +438,41 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		String nameLet = letDef.getText();
 		IExpression e = n.getExpression();
 		
-		List<LocalVarInfo> localVar = new ArrayList<LocalVarInfo>();
+		//List<LocalVarInfo> localVar = new ArrayList<LocalVarInfo>();
+		//mv.visitLocalVariable(nameLet, nameLet, nameLet, null, null, slotCounter);
 		String desc = letDef.getType().getDesc();
 		int slot = letDef.getIdent().getSlot();
-
+		System.out.println("-----line 445----slot in let by letDef---"+slot);
 		// letDef.getIdent().setSlot(++slot);
-		localVar.add(new LocalVarInfo(letDef.getIdent().getName(), desc, null, null));
+		//localVar.add(new LocalVarInfo(letDef.getIdent().getName(), desc, null, null));
 //		if (eType.isInt() || eType.isBoolean()) {
-//			mv.visitInsn(ICONST_0);
+//		mv.visitVarInsn(ILOAD, letDef.getIdent().getSlot());
 //		} else {
 //			mv.visitVarInsn(ALOAD, letDef.getIdent().getSlot());
 //		}
+		
 		Label funcStart = new Label();
 		mv.visitLabel(funcStart);
 		if (e != null) { // the return statement has an expression
 			IType eType = e.getType();
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
+			if (eType.isInt() || eType.isBoolean()) {
+				mv.visitVarInsn(ISTORE, slot);
+			} else {
+				mv.visitVarInsn(ASTORE, slot);
+			}
+			//MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv, localVar);
+			
 			n.getBlock().visit(this, arg);
 			Label funcEnd = new Label();
 			mv.visitLabel(funcEnd);
 			// addLocals(context, funcStart, funcEnd);
-			mv.visitLocalVariable(letDef.getIdent().getName(), desc, null, funcStart, funcEnd, ++slotCounter);
-
+			
+			
+			
+			
+			//addLocals(context, funcStart, funcEnd);
+			mv.visitLocalVariable(letDef.getIdent().getName(), desc, null, funcStart, funcEnd, slot);
 			// mv.visitEnd();
 			// mv.visitInsn(IRETURN);
 //			} else {
