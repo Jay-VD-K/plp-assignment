@@ -480,7 +480,11 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //			}
 		} else { // there is no argument, (and we have verified duirng type checking that
 					// function has void return type) so use this return statement.
-			mv.visitInsn(RETURN);
+			//mv.visitInsn(RETURN);
+			n.getBlock().visit(this, arg);
+			Label funcEnd = new Label();
+			mv.visitLabel(funcEnd);
+			mv.visitLocalVariable(letDef.getIdent().getName(), desc, null, funcStart, funcEnd, slot);
 		}
 		return null;
 	}
