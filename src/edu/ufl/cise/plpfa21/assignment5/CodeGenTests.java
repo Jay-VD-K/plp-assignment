@@ -1369,7 +1369,7 @@ public class CodeGenTests {
 				""";
 		byte[] bytecode = compile(input, className, packageName);
 		show(CodeGenUtils.bytecodeToString(bytecode));
-		Object[] params = { true };
+		Object[] params = { };
 		int result = (int) loadClassAndRunMethod(bytecode, className, "func", params);
 		assertEquals(1, result);
 	}
