@@ -293,8 +293,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 		List<IDeclaration> decs = n.getDeclarations();
 		for (IDeclaration dec : decs) {
 			dec.visit(this, symtab);
+			slotCount = 0;
 		}
-		slotCount = 0;
+
 		return n;
 	}
 
