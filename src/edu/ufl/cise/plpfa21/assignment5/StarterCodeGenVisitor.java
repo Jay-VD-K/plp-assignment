@@ -283,17 +283,29 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv();
 		String fn = n.getName().getText();
 
-		// String text = (n.getName().getDec()!=null) ? n.getName().getDec().getText()
-		// :"";
 		IType type = n.getType();
-		mv.visitVarInsn(Opcodes.ILOAD, n.getName().getSlot()); // loads local var
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		for (IExpression def : n.getArgs()) {
+			def.visit(this, arg);
+			String desc = def.getType().getDesc();
+			sb.append(desc);
+		}
+		sb.append(")");
 
 		if (type.isInt()) {
-			mv.visitMethodInsn(INVOKESTATIC, className, fn, "(I)I", false);
+			sb.append("I");
+			mv.visitMethodInsn(INVOKESTATIC, className, fn, sb.toString(), false);
 		} else if (type.isBoolean()) {
-			mv.visitMethodInsn(INVOKESTATIC, className, fn, "(I)Z", false);
+			sb.append("Z");
+			mv.visitMethodInsn(INVOKESTATIC, className, fn, sb.toString(), false);
+		} else if (type.isString()) {
+			sb.append("Ljava/lang/String;");
+			mv.visitMethodInsn(INVOKESTATIC, className, fn, sb.toString(), false);
 		} else {
-			mv.visitMethodInsn(INVOKESTATIC, className, fn, "(I)V", false);
+			sb.append("V");
+			mv.visitMethodInsn(INVOKESTATIC, className, fn, sb.toString(), false);
 		}
 		return null;
 	}
@@ -326,6 +338,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		default: {
 			if (type.isBoolean() || type.isInt()) {
 				mv.visitVarInsn(Opcodes.ILOAD, n.getName().getSlot());
+				System.out.println("-----line 349: slot in ident---" + n.getName().getSlot());
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, n.getName().getSlot());
 			}
@@ -437,20 +450,21 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		INameDef letDef = n.getLocalDef();
 		String nameLet = letDef.getText();
 		IExpression e = n.getExpression();
-		
-		//List<LocalVarInfo> localVar = new ArrayList<LocalVarInfo>();
-		//mv.visitLocalVariable(nameLet, nameLet, nameLet, null, null, slotCounter);
+
+		// List<LocalVarInfo> localVar = new ArrayList<LocalVarInfo>();
+		// mv.visitLocalVariable(nameLet, nameLet, nameLet, null, null, slotCounter);
 		String desc = letDef.getType().getDesc();
 		int slot = letDef.getIdent().getSlot();
-		System.out.println("-----line 445----slot in let by letDef---"+slot);
+		System.out.println("-----line 445----slot in let by letDef---" + slot);
 		// letDef.getIdent().setSlot(++slot);
-		//localVar.add(new LocalVarInfo(letDef.getIdent().getName(), desc, null, null));
+		// localVar.add(new LocalVarInfo(letDef.getIdent().getName(), desc, null,
+		// null));
 //		if (eType.isInt() || eType.isBoolean()) {
 //		mv.visitVarInsn(ILOAD, letDef.getIdent().getSlot());
 //		} else {
 //			mv.visitVarInsn(ALOAD, letDef.getIdent().getSlot());
 //		}
-		
+
 		Label funcStart = new Label();
 		mv.visitLabel(funcStart);
 		if (e != null) { // the return statement has an expression
@@ -461,17 +475,15 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 			} else {
 				mv.visitVarInsn(ASTORE, slot);
 			}
-			//MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv, localVar);
-			
+			// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv,
+			// localVar);
+
 			n.getBlock().visit(this, arg);
 			Label funcEnd = new Label();
 			mv.visitLabel(funcEnd);
 			// addLocals(context, funcStart, funcEnd);
-			
-			
-			
-			
-			//addLocals(context, funcStart, funcEnd);
+
+			// addLocals(context, funcStart, funcEnd);
 			mv.visitLocalVariable(letDef.getIdent().getName(), desc, null, funcStart, funcEnd, slot);
 			// mv.visitEnd();
 			// mv.visitInsn(IRETURN);
@@ -480,7 +492,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 //			}
 		} else { // there is no argument, (and we have verified duirng type checking that
 					// function has void return type) so use this return statement.
-			//mv.visitInsn(RETURN);
+			// mv.visitInsn(RETURN);
 			n.getBlock().visit(this, arg);
 			Label funcEnd = new Label();
 			mv.visitLabel(funcEnd);
