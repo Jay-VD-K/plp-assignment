@@ -171,7 +171,7 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 						mv.visitJumpInsn(IF_ACMPEQ, start);
 						mv.visitLdcInsn(false);
 					} else if (op == Kind.NOT_EQUALS) {
-						mv.visitJumpInsn(IF_ACMPEQ, start);
+						mv.visitJumpInsn(IF_ACMPNE, start);
 						mv.visitLdcInsn(false);
 					} else if (op == Kind.LT) {
 						mv.visitInsn(Opcodes.SWAP);
