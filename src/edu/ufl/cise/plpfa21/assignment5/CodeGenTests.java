@@ -1223,7 +1223,7 @@ public class CodeGenTests {
 				   RETURN x+1;
 				END
 
-				FUN main(y: INT): INT
+				FUN main(y:INT): INT
 				DO
 				   RETURN a(y)+2;
 				END
@@ -1297,8 +1297,7 @@ public class CodeGenTests {
 		String result = (String) loadClassAndRunMethod(bytecode, className, "a", params);
 		assertEquals("HELLOWORLD", result);
 	}
-	
-	
+
 	@DisplayName("jayavidhi_kumar_test2")
 	@Test
 	public void jayavidhi_kumar_test2(TestInfo testInfo) throws Exception {
@@ -1320,8 +1319,7 @@ public class CodeGenTests {
 		String result = (String) loadClassAndRunMethod(bytecode, className, "a", params);
 		assertEquals("helloworldworldworldworld", result);
 	}
-	
-	
+
 	@DisplayName("jayavidhi_kumar_test3")
 	@Test
 	public void jayavidhi_kumar_test3(TestInfo testInfo) throws Exception {
@@ -1349,8 +1347,7 @@ public class CodeGenTests {
 		assertEquals(false, getBoolean(testClass, "h"));
 		assertEquals(6, getInt(testClass, "a"));
 	}
-	
-	
+
 	@DisplayName("jayavidhi_kumar_test4")
 	@Test
 	public void jayavidhi_kumar_4(TestInfo testInfo) throws Exception {
@@ -1369,9 +1366,131 @@ public class CodeGenTests {
 				""";
 		byte[] bytecode = compile(input, className, packageName);
 		show(CodeGenUtils.bytecodeToString(bytecode));
-		Object[] params = { };
+		Object[] params = {};
 		int result = (int) loadClassAndRunMethod(bytecode, className, "func", params);
 		assertEquals(1, result);
+	}
+
+	@DisplayName("funcCallExpr3")
+	@Test
+	public void funcCallExpr3(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN a(x:INT): STRING
+				DO
+				   RETURN "x+1";
+				END
+
+				FUN main(y: INT): STRING
+				DO
+				   RETURN a(y);
+				END
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		Object[] params = { 7 };
+		String result = (String) loadClassAndRunMethod(bytecode, className, "main", params);
+		assertEquals("x+1", result);
+	}
+
+	@DisplayName("funcCallExpr4")
+	@Test
+	public void funcCallExpr4(TestInfo testInfo) throws Exception {
+		String input = """
+				FUN a(x:INT): INT
+				DO
+				   RETURN x+1;
+				END
+
+				FUN main(): INT
+				DO
+				   RETURN a(7)+2;
+				END
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		Object[] params = {};
+		int result = (int) loadClassAndRunMethod(bytecode, className, "main", params);
+		assertEquals(10, result);
+	}
+
+	@DisplayName("jayavidhi_kumar_test6")
+	@Test
+	public void jayavidhi_kumar_test6(TestInfo testInfo) throws Exception {
+		String input = """
+				VAL z:INT = 10;
+
+				FUN cal():INT
+				DO
+					RETURN z;
+				END
+
+				FUN fn():INT
+				DO
+					RETURN (((cal()+2)-6)*3)/9;
+				END
+
+				VAL a = TRUE;
+				VAR x:INT = 0;
+				FUN fun(b:STRING)
+				DO
+					IF a == TRUE && b == "ADD"
+					DO
+						x= x+2;
+					END
+					IF a == TRUE && b != "ADD"
+					DO
+						x= x+1;
+					END
+				END
+
+
+				VAR y = 10;
+
+				FUN f(n:INT, bool:BOOLEAN, str: STRING, m:INT, o:INT):STRING
+				DO
+					IF bool == TRUE
+						DO
+							WHILE y<m
+								DO
+									IF fn()/2 == 1
+										DO
+										 WHILE x<n
+												DO
+													LET c:INT = 5
+													DO
+														/* function call here */
+														 fun(str);
+														 c=x;
+													END
+													y = y + c;
+												END
+										END
+								END
+						END
+						IF y<o
+						DO
+							str= str+ " successful";
+						END
+						IF y>o
+						DO
+							str= str +  " unsuccessful!";
+						END
+					RETURN str;
+				END
+				VAR s:STRING;
+				FUN main()
+				DO
+					LET s1 = f(5,TRUE, "ADD", 20, 30) DO END
+					s = s1;
+				END
+
+				""";
+		byte[] bytecode = compile(input, className, packageName);
+		show(CodeGenUtils.bytecodeToString(bytecode));
+		Object[] params = {};
+		Class<?> testClass = getClass(bytecode, className);
+		runMethod(testClass, "main", params);
+		assertEquals("ADD successful", getString(testClass, "s"));
 	}
 
 }
