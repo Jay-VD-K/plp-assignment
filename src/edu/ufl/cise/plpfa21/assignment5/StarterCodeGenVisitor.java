@@ -338,14 +338,12 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 		default: {
 			if (type.isBoolean() || type.isInt()) {
 				mv.visitVarInsn(Opcodes.ILOAD, n.getName().getSlot());
-				System.out.println("-----line 349: slot in ident---" + n.getName().getSlot());
 			} else {
 				mv.visitVarInsn(Opcodes.ALOAD, n.getName().getSlot());
 			}
 		}
 			break;
 		}
-		// n.visit(this, arg);
 		return null;
 	}
 
@@ -400,7 +398,6 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 
 		if (e != null) { // the return statement has an expression
 			e.visit(this, arg); // generate code to leave value of expression on top of stack.
-			// use type of expression to determine which return instruction to use
 			mv.visitJumpInsn(IFEQ, IFend);
 			Label IFstart = new Label();
 			mv.visitLabel(IFstart);
@@ -448,22 +445,10 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 	public Object visitILetStatement(ILetStatement n, Object arg) throws Exception {
 		MethodVisitor mv = ((MethodVisitorLocalVarTable) arg).mv;
 		INameDef letDef = n.getLocalDef();
-		String nameLet = letDef.getText();
 		IExpression e = n.getExpression();
 
-		// List<LocalVarInfo> localVar = new ArrayList<LocalVarInfo>();
-		// mv.visitLocalVariable(nameLet, nameLet, nameLet, null, null, slotCounter);
 		String desc = letDef.getType().getDesc();
 		int slot = letDef.getIdent().getSlot();
-		System.out.println("-----line 445----slot in let by letDef---" + slot);
-		// letDef.getIdent().setSlot(++slot);
-		// localVar.add(new LocalVarInfo(letDef.getIdent().getName(), desc, null,
-		// null));
-//		if (eType.isInt() || eType.isBoolean()) {
-//		mv.visitVarInsn(ILOAD, letDef.getIdent().getSlot());
-//		} else {
-//			mv.visitVarInsn(ALOAD, letDef.getIdent().getSlot());
-//		}
 
 		Label funcStart = new Label();
 		mv.visitLabel(funcStart);
@@ -475,24 +460,13 @@ public class StarterCodeGenVisitor implements ASTVisitor, Opcodes {
 			} else {
 				mv.visitVarInsn(ASTORE, slot);
 			}
-			// MethodVisitorLocalVarTable context = new MethodVisitorLocalVarTable(mv,
-			// localVar);
 
 			n.getBlock().visit(this, arg);
 			Label funcEnd = new Label();
 			mv.visitLabel(funcEnd);
-			// addLocals(context, funcStart, funcEnd);
-
-			// addLocals(context, funcStart, funcEnd);
 			mv.visitLocalVariable(letDef.getIdent().getName(), desc, null, funcStart, funcEnd, slot);
-			// mv.visitEnd();
-			// mv.visitInsn(IRETURN);
-//			} else {
-//				mv.visitInsn(ARETURN);
-//			}
 		} else { // there is no argument, (and we have verified duirng type checking that
 					// function has void return type) so use this return statement.
-			// mv.visitInsn(RETURN);
 			n.getBlock().visit(this, arg);
 			Label funcEnd = new Label();
 			mv.visitLabel(funcEnd);

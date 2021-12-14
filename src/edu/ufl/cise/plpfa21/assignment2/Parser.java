@@ -741,7 +741,6 @@ public class Parser implements IPLPParser {
 			Program__ first;
 			// System.out.println("new token " + token + "token kind" + kind);
 			first = program();
-			System.out.println("aST=---------- "+ first);
 			if (kind == Kind.EOF)
 				return first;
 			// throw new UnsupportedOperationException();
